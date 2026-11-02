@@ -1,25 +1,43 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import OrderFormModal from './OrderFormModal';
 
+interface Order {
+    id: string;
+    customer: string;
+    product: string;
+    category: string;
+    amount: number;
+    status: string;
+    date: string;
+}
 
 export default function Orders() {
-    const [orders, setOrders] = useState([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const loadOrders = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/orders');
+            if (!response.ok) {
+                throw new Error(`注文情報の取得に失敗しました (${response.status})`);
+            }
+            const data: Order[] = await response.json();
+            setOrders(data);
+        } catch (err) {
+            console.error('Orders API Fetch Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        fetch('/api/orders')
-            .then((res) => res.json())
-            .then((data) => {
-                setOrders(data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error('Orders API Fetch Error:', err);
-                setLoading(false);
-            });
+        void loadOrders();
     }, []);
 
     // ステータスに応じたバッジの色指定
-    const getStatusStyle = (status) => {
+    const getStatusStyle = (status: string) => {
         switch (status) {
             case '完了':
                 return { backgroundColor: '#e6f4ea', color: '#30649c' };
@@ -109,6 +127,22 @@ export default function Orders() {
                 <div className="card-order-header-title">
                     <h1 style={{ marginBottom: '8px', fontSize: '24px' }}>Orders</h1>
                     <p style={{ color: '#666', margin: 0 }}>注文履歴一覧（SQLite API連携）</p>
+                    <button
+                        type="button"
+                        onClick={() => setIsModalOpen(true)}
+                        style={{
+                            marginTop: '12px',
+                            padding: '10px 20px',
+                            backgroundColor: '#21559d',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                        }}
+                    >
+                        + 新規登録
+                    </button>
                 </div>
 
                 {/* タイトルの横に配置する合計金額カード */}
@@ -121,6 +155,11 @@ export default function Orders() {
                     </div>
                 </div>
             </div>
+            <OrderFormModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmitSuccess={() => void loadOrders()}
+            />
 
 
             <div className="orders-select-filter-bar-vertual">
