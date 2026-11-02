@@ -1,0 +1,142 @@
+// ────────────────────────
+//  HORIZONTAL TIMELINE
+// ────────────────────────
+
+.timeline-horizontal-wrapper {
+    width: 100%;
+    overflow-x: auto; // 横幅オーバー時にスクロール表示
+    padding-bottom: 12px;
+
+    // カスタムスクロールバー（スッキリした見た目）
+    &::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
+    }
+}
+.timeline-horizontal {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(13, minmax(220px, 1fr));
+    gap: 24px;
+    padding-top: 36px;
+
+    // ★ 修正1: 頭に & を追加（全体を貫く横ライン）
+    &::before {
+        content: '';
+        position: absolute;
+        top: 6px;
+        left: 12px;
+        right: 12px;
+        height: 2px;
+        background: var(--border-color);
+        border-radius: 2px;
+    }
+
+ .timeline-item {
+     position: relative;
+
+     // 丸ポチの基本設定（形状のみ指定し、標準背景色を設定）
+     &::before {
+         content: '';
+         position: absolute;
+         left: 0;
+         top: -30px;
+         width: 14px;
+         height: 14px;
+         border-radius: 50%;
+         border: 2px solid var(--border-color, #ccc);
+         background-color: var(--bg-surface, #fff);
+         z-index: 1;
+     }
+
+     // クラスが付与された際の色変化（確実に適用させる）
+     &.is-yellow::before {
+         border-color: var(--yellow, #f59f00) !important;
+         background-color: var(--yellow, #f59f00) !important;
+     }
+
+     &.is-green::before {
+         border-color: var(--green, #2fb344) !important;
+         background-color: var(--green, #2fb344) !important;
+     }
+
+     &.is-red::before {
+         border-color: var(--red, #d63939) !important;
+         background-color: var(--red, #d63939) !important;
+     }
+
+     &.is-blue::before {
+         border-color: var(--blue, #206bc4) !important;
+         background-color: var(--blue, #206bc4) !important;
+     }
+
+     &.is-primary::before {
+         border-color: var(--primary, #1abb9c) !important;
+         background-color: var(--primary, #1abb9c) !important;
+     }
+ }
+        .ti-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .ti-title {
+            font-size: 13px;
+            font-weight: var(--font-weight-medium);
+            color: var(--text);
+        }
+
+        .ti-desc {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+        }
+    }
+
+        
+
+        &.is-green::before {
+            border-color: var(--green);
+            background: var(--green);
+        }
+
+        &.is-yellow::before {
+            border-color: var(--yellow);
+            background: var(--yellow);
+        }
+
+        &.is-red::before {
+            border-color: var(--red);
+            background: var(--red);
+        }
+
+        &.is-blue::before {
+            border-color: var(--blue);
+            background: var(--blue);
+        }
+
+        .ti-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+
+        .ti-title {
+            font-size: 13px;
+            font-weight: var(--font-weight-medium);
+            color: var(--text);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .ti-desc {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+    

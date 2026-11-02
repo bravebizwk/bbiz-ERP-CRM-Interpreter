@@ -1,0 +1,116 @@
+@use "../abstracts/variables" as *;
+
+/* ==========================================
+   Base Table
+========================================== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ==========================================
+   Header
+========================================== */
+
+th {
+    padding: 14px 16px;
+
+    text-align: left;
+
+    font-size: 0.875rem;
+
+    font-weight: 600;
+
+    color: $text-primary;
+
+    border-bottom: 1px solid $border-color;
+}
+
+/* ==========================================
+   Body
+========================================== */
+
+td {
+    padding: 14px 16px;
+
+    color: $text-primary-white;
+
+    border-bottom: 1px solid $border-color;
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.table-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: $border-color;
+
+    border-radius: 999px;
+}
+
+/* ==========================================
+   Status Badge
+========================================== */
+
+.status-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 80px;
+
+    padding: 4px 12px;
+
+    border-radius: 999px;
+
+    font-size: 0.75rem;
+
+    font-weight: 600;
+}
+
+.status-paid {
+    background: rgba(16, 185, 129, 0.15);
+
+    color: $success;
+}
+
+.status-shipping {
+    background: rgba(59, 130, 246, 0.15);
+
+    color: $primary;
+}
+
+.status-pending {
+    background: rgba(245, 158, 11, 0.15);
+
+    color: $warning;
+}
+
+.status-cancelled {
+    background: rgba(239, 68, 68, 0.15);
+
+    color: $danger;
+}

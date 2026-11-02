@@ -1,0 +1,90 @@
+@use "../abstracts/variables" as *;
+
+.orders-filter-bar {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-bottom: 20px;
+}
+
+.orders-filter-bar select {
+    min-width: 180px;
+
+    padding: 10px 14px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 8px;
+
+    background: var(--surface);
+
+    color: var(--text-primary);
+}
+
+
+/* ==========================================================================
+   Card Order Header Styles
+   ========================================================================== */
+
+.card-order-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap; // 画面幅が狭い場合は折り返し
+
+    &-title {
+        flex: 1;
+        min-width: 200px;
+
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: #333333;
+        }
+
+        p {
+            margin: 0;
+            font-size: 14px;
+            color: #666666;
+        }
+    }
+
+    /* 合計金額表示用カードエリア */
+    &-summary {
+        .summary-card {
+            background-color: $bg-surface2;
+            border: 1px solid $border-color2;
+            border-radius: 12px;
+            padding: 12px 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 180px;
+
+            &-label {
+                font-size: 12px;
+                font-weight: 500;
+                color: $text-primary-white2;
+                margin-bottom: 4px;
+            }
+
+            &-value {
+                font-size: 20px;
+                font-weight: 700;
+                color: $text-primary;
+                letter-spacing: -0.02em;
+            }
+        }
+    }
+}
+
+h1 {
+    color: $text-primary;
+}

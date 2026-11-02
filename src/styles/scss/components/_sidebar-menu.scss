@@ -1,0 +1,62 @@
+@use "../abstracts/variables" as *;
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+
+    padding: 1rem 0;
+    padding-left: 12px;
+  
+}
+
+.sidebar-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px 16px;
+    border-radius: 10px;
+
+    color: #f4f6f8;
+
+    text-decoration: none;
+
+    transition: all 0.2s ease;
+}
+
+.sidebar-item:hover {
+    background: #1e293b;
+}
+
+.sidebar-icon {
+    flex-shrink: 0;
+
+    width: 20px;
+    height: 20px;
+}
+
+.sidebar-label {
+    white-space: nowrap;
+    overflow: hidden;
+    color: $text-primary-white;
+    
+}
+
+
+
+
+.sidebar.closed {
+    width: 80px;
+}
+
+.sidebar.closed .sidebar-item {
+    justify-content: center;
+}
+
+.sidebar.closed .sidebar-icon {
+    margin-left: 0;
+}

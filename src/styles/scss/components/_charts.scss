@@ -1,0 +1,45 @@
+.revenue-chart-card {
+  .card-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+  }
+}
+
+.chart-period-selector {
+  display: flex;
+
+  gap: 8px;
+}
+
+.period-btn {
+  border: 1px solid #334155;
+
+  background: transparent;
+
+  color: #cbd5e1;
+
+  padding: 6px 12px;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.period-btn:hover {
+  background: #1e293b;
+}
+
+.period-btn.active {
+  background: #2563eb;
+
+  border-color: #2563eb;
+
+  color: white;
+}

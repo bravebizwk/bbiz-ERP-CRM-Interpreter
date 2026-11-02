@@ -1,0 +1,45 @@
+.card-click{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+
+    .stats-card {
+        cursor: pointer;
+        padding: 12px 20px;
+        border: 1px solid #6e7378;
+        border-radius: 8px;
+        background-color: #3d434d;
+        transition: all 0.2s ease-in-out;
+        min-width: 120px;
+        text-align: center;
+
+        &:hover {
+            border-color: #34d0e8;
+            background-color: #4b515d;
+        }
+    }
+        h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.1rem;
+            color: #e4e4e4;
+        }
+    
+        /* バッジの下に余白を追加 */
+        .badge {
+            margin-bottom: 12px;
+        }
+    
+        /* 下部の説明文スタイル */
+        .card-description {
+            padding-top: 24px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #babcf8 !important;
+            text-align: left;
+            /* 長文は左揃えの方が見やすい */
+            word-break: break-word;
+        }
+}

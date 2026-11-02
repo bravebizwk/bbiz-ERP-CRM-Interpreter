@@ -1,0 +1,623 @@
+@use "../abstracts/variables" as *;
+
+
+/* === Top : 文字色 === */
+
+.accent-bar {
+    // accent-bar 自体のスタイル（もしあれば）
+    padding-bottom: 1rem;
+
+
+    // その中にある div の中の h2 を指定
+    div {
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ink,$text-primary);
+        }
+    }
+}
+
+/* === Select : カード-クリック === */
+
+nav {
+    display: flex;
+    gap: 16px; // 参考コードに合わせて少し広めに調整
+    flex-wrap: wrap; // 画面幅が狭くても折り返すように
+    margin-bottom: 24px;
+
+
+    // --- ここを追加・変更して中央寄せにする ---
+        justify-content: center; // ボタン全体を中央に寄せる
+        text-align: center; // テキストの念のための中央揃え
+
+    button {
+        // ボタンとしての基本機能・カーソル
+        cursor: pointer;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+
+        // 参考コード（.stats-card）の色味・形状を踏襲
+        border: 1px solid #6e7378;
+        border-radius: 8px; 
+        background-color: #3d434d;
+        color: #e4e4e4; // 文字色も参考のトーンに合わせる
+        text-align: center;
+        min-width: 120px;
+
+    
+
+        // ホバー時の見た目（参考コードと同じカラー）
+        &:hover {
+            transform: translateY(-1.6px) scale(1.03);
+            border-color: #34d0e8;
+            background-color: #4b515d;
+            color: #ffffff;
+        }
+
+        // activeクラスが付いたとき（選択中）のスタイル
+        &.active {
+            border-color: #34d0e8;
+            background-color: #4b515d; // 選択中は少し明るいダーク色に
+            color: $selectbox-color2; // 選択中の文字色を目立たせるアクセントカラーに
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-weight: 700;
+        }
+    }
+}
+
+/* === TAB 1: チェックリスト === */
+
+
+.section-title {
+    background-color: #111827; // 背景を白に
+    font-family: 'Shippori Mincho', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #e4f1f1;
+}
+
+.section-sub {
+    background-color: #111827; // 背景を白に
+    font-size: 12px;
+    color: #e4f1f1;
+    margin-bottom: 28px;
+    letter-spacing: 0.5px;
+}
+
+.checklist-group {
+    background-color: #e4f1f1; // 背景を白に
+    margin-bottom: 32px;
+
+
+    // --- 中央寄せのための設定 ---
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 800px; // 必要に応じて最大幅を設定してください（例: 800pxや100%など）
+    
+        // 見た目を綺麗にするための追加（お好みで調整してください）
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); // 軽く影をつけてカード風にする場合
+}
+
+.group-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-left: 3px solid var(--accent);
+    padding-left: 10px;
+    margin-bottom: 12px;
+}
+
+.check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 4px 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+}
+
+.check-item:hover {
+    border-color: var(--ink);
+}
+
+.check-item.done {
+    opacity: 0.5;
+    background: transparent;
+}
+
+.check-item.done .ci-text {
+    text-decoration: line-through;
+}
+
+.ci-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #179c9c;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin-top: 1px;
+}
+
+.check-item.done .ci-box {
+    background: var(--accent2);
+    border-color: var(--accent2);
+}
+
+.ci-check {
+    color: rgb(37, 13, 216);
+    font-size: 16px;
+    display: none;
+    font-weight: 1200;   
+}
+
+.check-item.done .ci-check {
+    display: block;
+}
+
+.ci-content {
+    flex: 1;
+    font-size: 1.2rem;
+}
+
+.ci-text {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.ci-tip {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+    line-height: 1.4;
+}
+
+.progress-wrap {
+    margin-bottom: 28px;
+}
+
+.progress-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.progress-bar {
+    height: 6px;
+    background: var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent2);
+    transition: width 0.4s ease;
+    border-radius: 3px;
+}
+
+/* === TAB 2: テンプレート === */
+.template-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+        // --- 中央寄せのための設定 ---
+            margin-left: auto;
+            margin-right: auto;
+    margin-bottom: 28px;
+    width: 64%;
+
+}
+
+.tmpl-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+        background-color: #e4f1f1;
+}
+
+.tmpl-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+}
+
+.tmpl-card.selected {
+    border-color: var(--accent);
+    border-width: 2px;
+}
+
+.tmpl-top {
+    display: flex; // 要素を横並びにする
+    align-items: left; // 垂直方向の中央揃え（必要に応じて調整）
+    gap: 12px; // 要素と要素の間隔を空ける
+}
+.tmpl-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.tmpl-name {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.tmpl-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.template-output {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 28px;
+    margin-top: 20px;
+    display: none;
+    border-radius: 2px;
+
+        // --- 中央寄せのための設定 ---
+            margin-left: auto;
+            margin-right: auto;
+    background-color: #e4f1f1;
+    width: 64%;
+    text-align: left;
+}
+
+.template-output.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.tmpl-out-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+
+    // --- 中央寄せのための設定 ---
+        margin-left: auto;
+        margin-right: auto;
+}
+
+.tmpl-field {
+    margin-bottom: 16px;
+    width: 88%;
+        // --- 中央寄せのための設定 ---
+            margin-left: auto;
+            margin-right: auto;
+}
+
+.tmpl-field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+    
+}
+
+.tmpl-field input,
+.tmpl-field textarea {
+    width: 88%;
+    border: 1px solid $selectbox-color;
+    background: $selectbox-color1;
+    border-radius: 4px;
+
+    padding: 8px 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    transition: border 0.2s;
+    border-radius: 2px;
+    resize: vertical;
+}
+
+.tmpl-field input:focus,
+.tmpl-field textarea:focus {
+    border-color: var(--accent);
+}
+
+.tmpl-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    border-radius: 2px;
+}
+
+.btn:hover {
+    background: var(--accent);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+}
+
+.btn-ghost:hover {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+.btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+
+/* === TAB 3: ナレッジ管理 === */
+.knowledge-layout {
+    margin-left: 3rem;
+    display: flex;
+    gap: 20px;
+
+    .kb-sidebar {
+        width: 200px;
+        flex-shrink: 0;
+        background-color:#e4f1f1;
+
+        .kb-cat-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--ink);
+        }
+
+        .kb-cat {
+            cursor: pointer;
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+            font-size: 14px;
+
+            &:hover {
+                background-color: var(--paper-hover, rgba(0, 0, 0, 0.05));
+            }
+
+            &.active {
+                background-color: var(--accent);
+                color: #2e5be1;
+                font-weight: bold;
+            }
+
+            .kb-cat-icon {
+                margin-right: 6px;
+            }
+        }
+    }
+
+    .kb-main {
+        flex: 1;
+            width: 20% !important;
+        .kb-search-wrap {
+            width: 50%;
+            display: flex;
+            align-items: center;
+            background: var(--card, #fff);
+            border: 1px solid var(--line, #ccc);
+            border-radius: 4px;
+            padding: 6px 12px;
+            margin-bottom: 16px;
+
+            .kb-search-icon {
+                margin-right: 8px;
+            }
+
+            input {
+                border: none;
+                outline: none;
+                width: 100%;
+                background: transparent;
+                font-size: 14px;
+            }
+        }
+
+        .kb-cards {
+                width: 80%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            .kb-card {
+                background: #e4f1f1;
+                border: 1px solid var(--line, #ccc);
+                border-radius: 6px;
+                padding: 16px;
+                cursor: pointer;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+                &:hover {
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                    transform: translateY(-2px);
+                }
+
+                .kb-card-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 8px;
+
+                    .kb-card-tag {
+                        font-size: 11px;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        background: var(--paper, #eee);
+                    }
+
+                    .kb-card-title {
+                        font-weight: bold;
+                        font-size: 15px;
+                    }
+                }
+
+                .kb-card-preview {
+                    font-size: 13px;
+                    color: var(--muted, #666);
+                    margin-bottom: 8px;
+                }
+
+                .kb-card-meta {
+                    font-size: 12px;
+                    color: var(--muted, #888);
+                }
+            }
+        }
+    }
+}
+
+/* === TAB 4: 優先度マトリクス === */
+
+.time-mtx   {
+    width: 72%;
+        // --- 中央寄せのための設定 ---
+            margin-left: auto !important;
+            margin-right: auto !important;
+}
+
+.time-grid {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    width: 80%;
+       
+
+    .time-card {
+        flex: 1;
+        background: var(--card, #dff1f3);
+        padding: 16px;
+        border: 1px solid var(--line, #ccc);
+        border-radius: 6px;
+
+        .tc-label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .tc-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .tc-sub {
+            font-size: 11px;
+            color: var(--muted);
+        }
+    }
+}
+
+.eisenhower {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 80%;
+        // --- ここを追加・変更して中央寄せにする ---
+            justify-content: center; // ボタン全体を中央に寄せる
+            text-align: center; // テキストの念のための中央揃え
+
+    .ei-cell {
+        background: var(--card, #4b8ad1b5);
+        padding: 16px;
+        border: 1px solid var(--line, #ccc);
+        border-radius: 6px;
+
+        .ei-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            .ei-badge {
+                font-size: 12px;
+                padding: 2px 6px;
+                background: var(--accent);
+                color: #fff;
+                border-radius: 4px;
+            }
+        }
+
+        .ei-task {
+            cursor: pointer;
+            padding: 6px 10px;
+            background: var(--paper, #f9f9f9);
+            margin: 4px 0;
+            font-size: 13px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            &:hover {
+                background: rgba(255, 0, 0, 0.05); // 削除ボタンのホバー感を演出
+            }
+        }
+
+        .ei-input {
+            width: 88%;
+            margin-top: 8px;
+            padding: 8px;
+            border: 1px solid var(--line, #ccc);
+            border-radius: 4px;
+            outline: none;
+            font-size: 13px;
+
+            &:focus {
+                border-color: var(--accent);
+            }
+        }
+    }
+}
+
+
+.tab-knowledge{
+    width: 80% !important;
+}
+.knowledge{
+    width: 80%;
+}
