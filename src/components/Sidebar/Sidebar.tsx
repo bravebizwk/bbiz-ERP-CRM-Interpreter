@@ -30,7 +30,7 @@ const items: SidebarItem[] = [
   { path: "/users", label: "Users", icon: Users },
   { path: "/products", label: "Products", icon: Package },
   { path: "/orders", label: "Orders", icon: ShoppingCart },
-  { path: "/timeline", label: "Timeline", icon: Clock },
+  { path: "/interpreter", label: "Interpreter", icon: Clock },
   { path: "/registereddocument", label: "Registered documents", icon: FileText },
   { path: "/1", label: "Documents", icon: FileText },
   { path: "/2", label: "Customer payments", icon: CreditCard },

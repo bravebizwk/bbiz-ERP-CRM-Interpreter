@@ -6,9 +6,9 @@ export async function GET() {
     const dbPath = path.resolve(process.cwd(), 'dashboard.sqlite');
     const db = new sqlite3.Database(dbPath);
 
-    return new Promise((resolve) => {
+    return new Promise<NextResponse>((resolve) => {
         const query = `
-      SELECT 
+      SELECT
         i.intp_no,
         i.intp_name_en,
         i.intp_name_kanji,
@@ -22,6 +22,7 @@ export async function GET() {
         db.all(query, [], (err: Error | null, rows: any[]) => {
             db.close();
             if (err) {
+                console.error('Interpreter database query failed:', err);
                 resolve(NextResponse.json({ error: err.message }, { status: 500 }));
             } else {
                 resolve(NextResponse.json(rows));

@@ -123,7 +123,7 @@ db.transaction(() => {
     stmtSidebar.run(2, 'Users', '/users', 'users');
     stmtSidebar.run(3, 'Products', '/products', 'products');
     stmtSidebar.run(4, 'Orders', '/orders', 'orders');
-    stmtSidebar.run(5, 'Timeline', '/timeline', 'timeline');
+    stmtSidebar.run(5, 'Interpreter', '/interpreter', 'timeline');
 
     // ActivityFeed データ
     db.prepare(`DELETE FROM activities`).run();

@@ -9,30 +9,41 @@ interface Interpreter {
     intp_add?: string;
 }
 
-export default function Interpreters() {
+export default function Interpreter() {
     const [interpreters, setInterpreters] = useState<Interpreter[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch('/api/interpreters')
-            .then((res) => res.json())
-            .then((data) => {
+        const loadInterpreters = async () => {
+            try {
+                const response = await fetch('/api/interpreter');
+                if (!response.ok) {
+                    throw new Error(`通訳者情報の取得に失敗しました (${response.status})`);
+                }
+
+                const data: Interpreter[] = await response.json();
                 setInterpreters(data);
-                setLoading(false);
-            })
-            .catch((err) => {
+            } catch (err) {
                 console.error('Interpreters API Fetch Error:', err);
+                setError(err instanceof Error ? err.message : '通訳者情報を取得できませんでした。');
+            } finally {
                 setLoading(false);
-            });
+            }
+        };
+
+        void loadInterpreters();
     }, []);
 
     return (
         <div className="card" style={{ padding: '24px' }}>
-            <h1 style={{ marginBottom: '16px', fontSize: '24px' }}>Interpreters</h1>
+            <h1 style={{ marginBottom: '16px', fontSize: '24px' }}>Interpreter</h1>
             <p style={{ color: '#666', marginBottom: '24px' }}>通訳者一覧（データベース結合データ連携）</p>
 
             {loading ? (
                 <p style={{ color: '#888' }}>読み込み中...</p>
+            ) : error ? (
+                <p role="alert" style={{ color: '#b91c1c' }}>{error}</p>
             ) : (
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>

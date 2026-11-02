@@ -14,7 +14,7 @@ import Smpl6 from '@/components/pages/6';
 import KanbanPage from '@/components/pages/kanban-page';
 import MonthlyPayment from '@/components/pages/MonthlyPayment';
 import Items from '@/components/pages/Items';
-import Interpreters from '@/components/pages/Timeline';
+import Interpreter from '@/components/pages/Interpreter';
 
 function NotFound() {
   return (
@@ -43,7 +43,7 @@ export function App() {
           <Route path="/6" element={<Smpl6 />} />
           <Route path="/chat" element={<Smpl6 />} />
           <Route path="/monthly-payment" element={<MonthlyPayment />} />
-          <Route path="/timeline" element={<Interpreters />} />
+          <Route path="/interpreter" element={<Interpreter />} />
           <Route path="/kanban" element={<KanbanPage />} />
           <Route path="/items" element={<Items />} />
           <Route path="/item-list" element={<Items />} />

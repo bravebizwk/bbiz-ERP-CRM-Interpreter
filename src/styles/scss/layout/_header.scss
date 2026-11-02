@@ -14,6 +14,10 @@
   align-items: center;
   justify-content: space-between;
 
+  .header-title {
+    color: #f8fafc;
+  }
+
   /* 左側ブロック（ボタン + タイトル）の横並び設定 */
   .header-left {
     display: flex;
@@ -24,7 +28,7 @@
     .hamburger-menu {
       background: transparent;
       border: none;
-      color: #94a3b8;
+      color: #21559d;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -35,12 +39,12 @@
 
       &:hover {
         background-color: #1e293b;
-        color: #f8fafc;
+        color: #1967b6;
       }
     }
 
     .header-title {
-      color: #f8fafc;
+      color: #f8fafc !important;
       font-size: 1.25rem;
       font-weight: 600;
       margin: 0;
@@ -98,6 +102,7 @@
 .logo {
   width: 44px;
   height: auto;
+  margin-left: 2rem;
 }
 
 .header-page-title {
@@ -106,4 +111,26 @@
   // text-align: right; 
   margin-right: 2rem;
 
+}
+.header-title {
+  h2 {
+    color: #f8fafc !important;
+  }
+}
+
+svg {
+  fill: currentColor; // または stroke: currentColor;
+} 
+
+
+
+// .header-left 内、または適切な階層で一元管理する
+.header-left {
+  .header-title {
+    color: #f8fafc !important; // ここで一発で白を指定する
+
+    h2 {
+      color: #f8fafc !important; // もし中に h2 がある場合も考慮
+    }
+  }
 }
