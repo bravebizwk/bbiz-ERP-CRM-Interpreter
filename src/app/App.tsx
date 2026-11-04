@@ -15,6 +15,7 @@ import KanbanPage from '@/components/pages/kanban-page';
 import MonthlyPayment from '@/components/pages/MonthlyPayment';
 import Items from '@/components/pages/Items';
 import Interpreter from '@/components/pages/Interpreter';
+import OrderClients from '@/components/pages/OrderClients';
 
 function NotFound() {
   return (
@@ -34,6 +35,10 @@ export function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/products" element={<Products />} />
           <Route path="/orders" element={<Orders />} />
+
+          <Route path="/orderclients" element={<OrderClients />} />
+          
+          
           <Route path="/registereddocument" element={<RegDoc />} />
           <Route path="/1" element={<Smpl1 />} />
           <Route path="/2" element={<Smpl2 />} />
