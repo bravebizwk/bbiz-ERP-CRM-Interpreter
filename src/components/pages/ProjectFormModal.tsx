@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface ModalProps {
     isOpen: boolean;
@@ -11,6 +11,12 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
     const [activeTab, setActiveTab] = useState<'basic' | 'contents' | 'date' | 'text'>('basic');
     const [submitting, setSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    // 各種サジェスト用の候補リスト
+    const [projectNoOptions, setProjectNoOptions] = useState<string[]>([]);
+    const [customerOptions, setCustomerOptions] = useState<string[]>([]);
+    const [partnerOptions, setPartnerOptions] = useState<string[]>([]);
+    const [interpreterOptions, setInterpreterOptions] = useState<string[]>([]);
 
     const [formData, setFormData] = useState({
         proj_no: '',
@@ -39,6 +45,34 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
         proj_char_count: 0,
         proj_count: 0,
     });
+
+    // モーダルが開いた時に各種候補データを取得
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const fetchOptions = async () => {
+            try {
+                const [projRes, custRes, partRes, intpRes] = await Promise.all([
+                    fetch('/api/projects'),
+                    fetch('/api/customers'),
+                    fetch('/api/partners'),
+                    fetch('/api/interpreters-list')
+                ]);
+
+                if (projRes.ok) {
+                    const projects = await projRes.json();
+                    setProjectNoOptions(projects.map((p: any) => p.proj_no));
+                }
+                if (custRes.ok) setCustomerOptions(await custRes.json());
+                if (partRes.ok) setPartnerOptions(await partRes.json());
+                if (intpRes.ok) setInterpreterOptions(await intpRes.json());
+            } catch (err) {
+                console.error('候補データの取得に失敗しました:', err);
+            }
+        };
+
+        void fetchOptions();
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -96,25 +130,87 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                     <div style={styles.body}>
                         {errorMessage && <p style={{ color: '#ef4444', marginBottom: '16px' }}>{errorMessage}</p>}
 
-                        {/* 基本情報・カテゴリ・パートナー・通訳者 */}
+                        {/* 基本情報・カテゴリ・顧客・パートナー・通訳者 */}
                         {activeTab === 'basic' && (
                             <div>
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>案件番号 (proj_no) *</label>
-                                    <input type="text" name="proj_no" value={formData.proj_no} onChange={handleChange} style={styles.input} required placeholder=" 例: P-001" />
+                                    <input
+                                        type="text"
+                                        name="proj_no"
+                                        value={formData.proj_no}
+                                        onChange={handleChange}
+                                        style={styles.input}
+                                        required
+                                        placeholder=" 例: P-001"
+                                        list="project-no-options"
+                                        autoComplete="off"
+                                    />
+                                    <datalist id="project-no-options">
+                                        {projectNoOptions.map((no, index) => (
+                                            <option key={index} value={no} />
+                                        ))}
+                                    </datalist>
                                 </div>
+
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>顧客名 (proj_customer) *</label>
-                                    <input type="text" name="proj_customer" value={formData.proj_customer} onChange={handleChange} style={styles.input} required placeholder=" 株式会社A" />
+                                    <input
+                                        type="text"
+                                        name="proj_customer"
+                                        value={formData.proj_customer}
+                                        onChange={handleChange}
+                                        style={styles.input}
+                                        required
+                                        placeholder=" 顧客名を選択または入力"
+                                        list="customer-options"
+                                        autoComplete="off"
+                                    />
+                                    <datalist id="customer-options">
+                                        {customerOptions.map((cust, index) => (
+                                            <option key={index} value={cust} />
+                                        ))}
+                                    </datalist>
                                 </div>
+
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>パートナー名 (proj_partner_name)</label>
-                                    <input type="text" name="proj_partner_name" value={formData.proj_partner_name} onChange={handleChange} style={styles.input} placeholder=" パートナー名" />
+                                    <input
+                                        type="text"
+                                        name="proj_partner_name"
+                                        value={formData.proj_partner_name}
+                                        onChange={handleChange}
+                                        style={styles.input}
+                                        placeholder=" パートナー名を選択または入力"
+                                        list="partner-options"
+                                        autoComplete="off"
+                                    />
+                                    <datalist id="partner-options">
+                                        {partnerOptions.map((part, index) => (
+                                            <option key={index} value={part} />
+                                        ))}
+                                    </datalist>
                                 </div>
+
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>通訳者名 英語 (intp_name_en)</label>
-                                    <input type="text" name="intp_name_en" value={formData.intp_name_en} onChange={handleChange} style={styles.input} placeholder=" Interpreter Name" />
+                                    <input
+                                        type="text"
+                                        name="intp_name_en"
+                                        value={formData.intp_name_en}
+                                        onChange={handleChange}
+                                        style={styles.input}
+                                        placeholder=" 通訳者名を選択または入力"
+                                        list="interpreter-options"
+                                        autoComplete="off"
+                                    />
+                                    <datalist id="interpreter-options">
+                                        {interpreterOptions.map((intp, index) => (
+                                            <option key={index} value={intp} />
+                                        ))}
+                                    </datalist>
                                 </div>
+
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>大カテゴリ</label>
                                     <select name="large_category" value={formData.large_category} onChange={handleChange} style={styles.input}>
@@ -172,29 +268,34 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                             </div>
                         )}
 
-                        {/* 日付・スケジュール */}
+                        {/* 日付・スケジュール（クリックで自動的にカレンダーが開く仕様） */}
                         {activeTab === 'date' && (
                             <div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>発行日 (proj_issue)</label>
-                                    <input type="text" name="proj_issue" value={formData.proj_issue} onChange={handleChange} style={styles.input} placeholder="YYYY-MM-DD" />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>リクエスト (proj_request)</label>
-                                    <input type="text" name="proj_request" value={formData.proj_request} onChange={handleChange} style={styles.input} />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>可能日 (proj_possible)</label>
-                                    <input type="text" name="proj_possible" value={formData.proj_possible} onChange={handleChange} style={styles.input} />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>日付 1 (proj_date_1)</label>
-                                    <input type="text" name="proj_date_1" value={formData.proj_date_1} onChange={handleChange} style={styles.input} />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>日付 2 (proj_date_2)</label>
-                                    <input type="text" name="proj_date_2" value={formData.proj_date_2} onChange={handleChange} style={styles.input} />
-                                </div>
+                                {[
+                                    { key: 'proj_issue', label: '発行日 (proj_issue)' },
+                                    { key: 'proj_request', label: 'リクエスト (proj_request)' },
+                                    { key: 'proj_possible', label: '可能日 (proj_possible)' },
+                                    { key: 'proj_date_1', label: '日付 1 (proj_date_1)' },
+                                    { key: 'proj_date_2', label: '日付 2 (proj_date_2)' },
+                                ].map(({ key, label }) => (
+                                    <div key={key} style={styles.formGroup}>
+                                        <label style={styles.label}>{label}</label>
+                                        <input
+                                            type="date"
+                                            name={key}
+                                            value={formData[key as keyof typeof formData] as string}
+                                            onChange={handleChange}
+                                            style={{ ...styles.input, cursor: 'pointer' }}
+                                            onClick={(e) => {
+                                                try {
+                                                    (e.currentTarget as HTMLInputElement).showPicker();
+                                                } catch (err) {
+                                                    // フォールバック
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         )}
 
