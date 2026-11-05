@@ -1,0 +1,58 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. ファイル管理テーブル（バージョン管理・論理削除・メタデータ・パーミッション対応）
+model project_files {
+  id            Int             @id @default(autoincrement())
+  proj_no       String          // 案件番号
+  file_name     String          // ファイル名
+  blob_url      String          // Azure Blob Storage の URL
+  version       Int             @default(1) // バージョン番号 (v1, v2...)
+  
+  // --- メタデータ・制限管理 ---
+  file_size     Int?            // ファイルサイズ（バイト単位）
+  mime_type     String?         // MIMEタイプ (例: application/pdf, image/jpeg 等)
+  
+  // --- 論理削除（非表示管理） ---
+  is_deleted    Boolean         @default(false) // 削除フラグ（trueで論理削除）
+  deleted_at    DateTime?       // 削除日時
+  deleted_by    String?         // 削除者
+  
+  // --- パーミッション・アクセス制限 ---
+  is_public     Boolean         @default(false) // 一般公開フラグ
+  allowed_roles String?         // アクセス許可ロール
+
+  // --- 基本タイムスタンプ ---
+  upload_date   DateTime        @default(now()) // アップロード日時
+  upload_user   String?         // アップロード者
+  
+  downloads     download_history[]
+  audit_logs    file_audit_log[]
+}
+
+model download_history {
+  id            Int           @id @default(autoincrement())
+  file_id       Int           
+  download_date DateTime      @default(now()) 
+  download_user String?       
+  ip_address    String?       
+
+  file          project_files @relation(fields: [file_id], references: [id], onDelete: Cascade)
+}
+
+model file_audit_log {
+  id            Int           @id @default(autoincrement())
+  file_id       Int?          
+  proj_no       String?       
+  action        String        
+  user_name     String?       
+  details       String?       
+  action_date   DateTime      @default(now()) 
+
+  file          project_files? @relation(fields: [file_id], references: [id], onDelete: SetNull)
+}
