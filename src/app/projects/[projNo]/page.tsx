@@ -28,19 +28,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </Link>
-                        <div>
-                            <div className="flex items-center space-x-2 text-indigo-600 font-semibold text-sm">
-                                <FolderKanban className="w-4 h-4" />
-                                <span>案件ファイル管理ポータル</span>
-                            </div>
-                            <h1 className="text-2xl font-bold text-gray-900 mt-1">案件番号: {projNo}</h1>
-                        </div>
-                    </div>
-                </div>
 
                 {/* ファイル管理マネージャー（アップロード・一覧・削除・ダウンロード統合） */}
                 <FileListManager projNo={projNo} currentUserName="Nishimura" />
-
+                   
+            </div>
+            </div>
             </div>
         </main>
     );

@@ -1,6 +1,10 @@
 sqliteコマンド
  C:\sqlite\sqlite3.exe "C:\Users\Owner\Workplace-Git-BBiz\dashboard.sqlite"
 
+ C:\Users\Owner\Workplace-Git-BBiz\bbiz-ERP-CRM-Interpritor\src\components
+
+ 
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.

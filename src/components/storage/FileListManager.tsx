@@ -70,61 +70,7 @@ export default function FileListManager({ projNo, currentUserName = '西村' }: 
             {/* アップロードセクション */}
             <FileUploadComponent projNo={projNo} uploadUser={currentUserName} onUploadSuccess={fetchFiles} />
 
-            {/* ファイル一覧セクション */}
-            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-indigo-600" />
-                        案件ファイル一覧 ({files.length}件)
-                    </h3>
-                    <button
-                        onClick={fetchFiles}
-                        className="p-2 text-gray-500 hover:text-indigo-600 transition-colors rounded-lg hover:bg-gray-50"
-                        title="更新"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
-                </div>
-
-                {files.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-8">アップロードされたファイルはまだありません。</p>
-                ) : (
-                    <div className="divide-y divide-gray-100">
-                        {files.map((file) => (
-                            <div key={file.id} className="py-3 flex items-center justify-between hover:bg-gray-50 px-3 rounded-lg transition-colors">
-                                <div className="flex items-center space-x-3 truncate">
-                                    <FileText className="w-8 h-8 text-indigo-500 flex-shrink-0" />
-                                    <div className="truncate">
-                                        <p className="text-sm font-medium text-gray-800 truncate">{file.file_name}</p>
-                                        <p className="text-xs text-gray-400">
-                                            {(file.file_size ? file.file_size / 1024 : 0).toFixed(1)} KB ・ アップロード者: {file.upload_user || '不明'} ({new Date(file.upload_date).toLocaleString()})
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-2 flex-shrink-0">
-                                    <a
-                                        href={file.blob_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                                        title="ダウンロード / 表示"
-                                    >
-                                        <Download className="w-4 h-4" />
-                                    </a>
-                                    <button
-                                        onClick={() => handleDelete(file.id)}
-                                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                        title="削除"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+       
         </div>
     );
 }
