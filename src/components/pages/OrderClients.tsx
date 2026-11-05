@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import ProjectFormModal from './ProjectFormModal';
 
 interface Project {
@@ -32,6 +33,13 @@ export default function ProjectList() {
     const [customerFilter, setCustomerFilter] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // ヘッダーのスタイル（ここで文字色などを一括管理）
+    const thStyle: React.CSSProperties = {
+        padding: '12px 8px',
+        color: '#8ed5f8c5', // 👈 ここの色を変えれば全てに反映されます
+        textAlign: 'left',
+    };
+
     const loadProjects = async () => {
         try {
             setLoading(true);
@@ -61,7 +69,7 @@ export default function ProjectList() {
             <div className="card-order-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div>
                     <h1 style={{ marginBottom: '4px', fontSize: '24px' }}>Projects</h1>
-                    <p style={{ color: '#666', margin: 0 }}>プロジェクト結合データ・カテゴリ一覧（SQLite API連携）</p>
+                    <p style={{ color: '#666', margin: 0 }}></p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
@@ -100,32 +108,39 @@ export default function ProjectList() {
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                         <thead>
-                            <tr style={{ borderBottom: '2px solid #eee', color: '#555' }}>
-                                <th style={{ padding: '12px 8px' }}>案件番号</th>
-                                <th style={{ padding: '12px 8px' }}>顧客名</th>
-                                <th style={{ padding: '12px 8px' }}>パートナー名</th>
-                                <th style={{ padding: '12px 8px' }}>通訳者名 (EN)</th>
-                                <th style={{ padding: '12px 8px' }}>大カテゴリ</th>
-                                <th style={{ padding: '12px 8px' }}>中カテゴリ</th>
-                                <th style={{ padding: '12px 8px' }}>小カテゴリ</th>
-                                <th style={{ padding: '12px 8px' }}>言語</th>
-                                <th style={{ padding: '12px 8px' }}>CT1</th>
-                                <th style={{ padding: '12px 8px' }}>CT2</th>
-                                <th style={{ padding: '12px 8px' }}>CT3</th>
-                                <th style={{ padding: '12px 8px' }}>CT4</th>
-                                <th style={{ padding: '12px 8px' }}>発行日</th>
-                                <th style={{ padding: '12px 8px' }}>リクエスト</th>
-                                <th style={{ padding: '12px 8px' }}>可能日</th>
-                                <th style={{ padding: '12px 8px' }}>フォーマット</th>
-                                <th style={{ padding: '12px 8px' }}>数量形式</th>
-                                <th style={{ padding: '12px 8px' }}>文字数</th>
-                                <th style={{ padding: '12px 8px' }}>カウント</th>
+                            <tr style={{ borderBottom: '2px solid #75abdb' }}>
+                                <th style={thStyle}>案件番号</th>
+                                <th style={thStyle}>顧客名</th>
+                                <th style={thStyle}>パートナー名</th>
+                                <th style={thStyle}>通訳者名 (EN)</th>
+                                <th style={thStyle}>大カテゴリ</th>
+                                <th style={thStyle}>中カテゴリ</th>
+                                <th style={thStyle}>小カテゴリ</th>
+                                <th style={thStyle}>言語</th>
+                                <th style={thStyle}>CT1</th>
+                                <th style={thStyle}>CT2</th>
+                                <th style={thStyle}>CT3</th>
+                                <th style={thStyle}>CT4</th>
+                                <th style={thStyle}>発行日</th>
+                                <th style={thStyle}>リクエスト</th>
+                                <th style={thStyle}>可能日</th>
+                                <th style={thStyle}>フォーマット</th>
+                                <th style={thStyle}>数量形式</th>
+                                <th style={thStyle}>文字数</th>
+                                <th style={thStyle}>カウント</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredProjects.map((proj) => (
                                 <tr key={proj.proj_no} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_no}</td>
+                                    <td style={{ padding: '12px 8px' }}>
+                                        <Link
+                                            href={`/projects/${proj.proj_no}`}
+                                            style={{ color: '#a3f8fc', textDecoration: 'underline', fontWeight: 500 }}
+                                        >
+                                            {proj.proj_no}
+                                        </Link>
+                                    </td>
                                     <td style={{ padding: '12px 8px' }}>{proj.proj_customer}</td>
                                     <td style={{ padding: '12px 8px' }}>{proj.proj_partner_name || '-'}</td>
                                     <td style={{ padding: '12px 8px' }}>{proj.intp_name_en || '-'}</td>

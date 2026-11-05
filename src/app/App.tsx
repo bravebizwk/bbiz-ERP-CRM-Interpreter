@@ -31,27 +31,13 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<DashboardLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/orders" element={<Orders />} />
-
           <Route path="/orderclients" element={<OrderClients />} />
-          
-          
-          <Route path="/registereddocument" element={<RegDoc />} />
-          <Route path="/1" element={<Smpl1 />} />
-          <Route path="/2" element={<Smpl2 />} />
-          <Route path="/3" element={<Smpl3 />} />
-          <Route path="/4" element={<Smpl4 />} />
-          <Route path="/5" element={<Smpl5 />} />
-          <Route path="/6" element={<Smpl6 />} />
           <Route path="/chat" element={<Smpl6 />} />
-          <Route path="/monthly-payment" element={<MonthlyPayment />} />
+          <Route path="/orders" element={<Orders />} />
           <Route path="/interpreter" element={<Interpreter />} />
+          <Route path="/users" element={<Users />} />
           <Route path="/kanban" element={<KanbanPage />} />
-          <Route path="/items" element={<Items />} />
-          <Route path="/item-list" element={<Items />} />
+          <Route path="/5" element={<Smpl5 />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

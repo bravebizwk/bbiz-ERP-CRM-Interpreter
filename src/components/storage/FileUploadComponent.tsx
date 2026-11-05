@@ -217,6 +217,7 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
                     <FolderKanban className="w-5 h-5" />
                     案件データ & ファイル管理
                 </h3>
+                <h3> {projectData.proj_partner_name} </h3>
                 <span className={styles.badge}>案件: {projNo}</span>
             </div>
 

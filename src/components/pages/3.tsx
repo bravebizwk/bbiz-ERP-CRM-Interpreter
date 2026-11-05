@@ -1,33 +1,50 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from "react";
 
+interface Customer {
+    id?: number;
+    customer_id?: number;
+    customer_code?: number;
+    code?: number;
+    customer_name?: string;
+    name?: string;
+    fiscal_year_end?: string;
+}
+
+interface MonthlyPayment {
+    year?: number;
+    fiscal_year?: number;
+    month?: number;
+    status?: string;
+}
+
 export default function CustomerFinancialTable() {
-    const [customers, setCustomers] = useState([]);
-    const [selectedCustomer, setSelectedCustomer] = useState(null);
-    const [monthlyPayments, setMonthlyPayments] = useState([]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [monthlyPayments, setMonthlyPayments] = useState<MonthlyPayment[]>([]);
     const [loading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [isOpen, setIsOpen] = useState(false);
-    const [yearFilter, setYearFilter] = useState("ALL");
-    const containerRef = useRef(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     // 顧客IDを取得するヘルパー関数
-    const getCustomerId = (customer) => {
+    const getCustomerId = (customer: Customer | null): number | null => {
         if (!customer) return null;
         return customer.id ?? customer.customer_id ?? customer.customer_code ?? customer.code ?? null;
     };
 
     // 決算日（fiscal_year_end: "YYYY-MM-DD" や "MM-DD"）から「翌月〜12ヶ月分」の月配列を計算
-    const getFiscalMonths = (fiscalYearEnd) => {
+    const getFiscalMonths = (fiscalYearEnd?: string): number[] => {
         if (!fiscalYearEnd) {
             return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
         }
-        // splitで月を取得（"YYYY-MM-DD" または "MM-DD" に対応）
         const parts = fiscalYearEnd.split("-");
         const fiscalMonth = parseInt(parts.length >= 2 ? parts[1] : parts[0], 10);
 
         if (isNaN(fiscalMonth)) return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-        const calculatedMonths = [];
+        const calculatedMonths: number[] = [];
         for (let i = 1; i <= 12; i++) {
             let m = (fiscalMonth + i) % 12;
             calculatedMonths.push(m === 0 ? 12 : m);
@@ -38,19 +55,18 @@ export default function CustomerFinancialTable() {
     // 選択された顧客の決算期月に応じた12ヶ月配列
     const fiscalMonths = getFiscalMonths(selectedCustomer?.fiscal_year_end);
 
-
     // 1. 初回レンダリング：顧客リスト取得
     useEffect(() => {
         fetch("/api/customers")
             .then((res) => res.json())
-            .then((data) => setCustomers(data))
+            .then((data: Customer[]) => setCustomers(data))
             .catch((err) => console.error("顧客リストの取得エラー:", err));
     }, []);
 
     // 2. 枠外クリック検知
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (containerRef.current && !containerRef.current.contains(event.target)) {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         };
@@ -70,7 +86,7 @@ export default function CustomerFinancialTable() {
         setLoading(true);
         fetch(`/api/monthly-payments?id=${customerId}&customerId=${customerId}`)
             .then((res) => res.json())
-            .then((data) => {
+            .then((data: MonthlyPayment[]) => {
                 setMonthlyPayments(data);
                 setLoading(false);
             })
@@ -86,7 +102,7 @@ export default function CustomerFinancialTable() {
         (c.customer_name || c.name || "").toLowerCase().includes(inputValue.toLowerCase())
     );
 
-    const handleSelectCustomer = (customer) => {
+    const handleSelectCustomer = (customer: Customer | null) => {
         if (customer) {
             setSelectedCustomer(customer);
             setInputValue(customer.customer_name || customer.name || "");
@@ -102,22 +118,22 @@ export default function CustomerFinancialTable() {
         ...new Set(
             monthlyPayments
                 .map((p) => p.year ?? p.fiscal_year)
-                .filter(Boolean)
+                .filter((y): y is number => y !== undefined && y !== null)
         )
     ].sort((a, b) => b - a);
 
     // 指定した年・月のステータスを取得
-    const getStatusForMonth = (year, month) => {
+    const getStatusForMonth = (year: number, month: number): string => {
         const record = monthlyPayments.find(
             (p) =>
                 Number(p.year ?? p.fiscal_year) === Number(year) &&
                 Number(p.month) === Number(month)
         );
-        return record ? record.status : "-";
+        return record?.status ? record.status : "-";
     };
 
     // バッジ表示
-    const renderStatusBadge = (status) => {
+    const renderStatusBadge = (status?: string) => {
         if (!status || status === "-") {
             return <span style={{ color: "#888" }}>-</span>;
         }
@@ -138,13 +154,12 @@ export default function CustomerFinancialTable() {
                 <div className="stats-card">
                     <div className="orders-select-filter-bar" ref={containerRef}>
                         <h2>会社名選択:</h2>
-                        {/* 親の div に width を設定することで、入力欄とドロップダウンの幅が合います */}
                         <div style={{ position: "relative", width: "320px" }}>
                             <input
                                 type="text"
                                 placeholder="会社名を入力・選択..."
                                 value={inputValue}
-                                style={{ width: "100%" }} // 親の 320px いっぱいに広げる
+                                style={{ width: "100%" }}
                                 onChange={(e) => {
                                     setInputValue(e.target.value);
                                     setIsOpen(true);
@@ -185,33 +200,27 @@ export default function CustomerFinancialTable() {
                                 </ul>
                             )}
                         </div>
-
-                        
-                    </div> 
-                </div> 
+                    </div>
+                </div>
 
                 {/* 会社番号（ID）表示部分 */}
                 <div className="stats-card">
                     <div className="company-id-display">
                         <h2>会社番号 (ID):</h2>
                         <h3>
-                        {selectedCustomer ? (getCustomerId(selectedCustomer) ?? "未選択") : "未選択"}
+                            {selectedCustomer ? (getCustomerId(selectedCustomer) ?? "未選択") : "未選択"}
                         </h3>
                     </div>
                 </div>
 
-                {/* 決算日表示部分（追加） */}
+                {/* 決算日表示部分 */}
                 <div className="stats-card">
-                    <div className="stats-card-title ">決算日:</div>
-                        <h3>
+                    <div className="stats-card-title">決算日:</div>
+                    <h3>
                         {selectedCustomer?.fiscal_year_end || "未設定"}
-                        </h3>
+                    </h3>
                 </div>
-            
-            
             </div>
-            
-                
 
             {/* テーブルエリア */}
             <div className="card">
@@ -220,21 +229,19 @@ export default function CustomerFinancialTable() {
                 {loading ? (
                     <p>データを読み込み中...</p>
                 ) : !selectedCustomer ? (
-                        <p className="stats-card-title">会社を選択すると月次ステータスが表示されます。</p>
+                    <p className="stats-card-title">会社を選択すると月次ステータスが表示されます。</p>
                 ) : years.length === 0 ? (
-                            <p className="stats-card-title">該当する月次データが存在しません。</p>
+                    <p className="stats-card-title">該当する月次データが存在しません。</p>
                 ) : (
                     <div className="table-responsive">
                         <table className="table table-bordered text-center align-middle">
                             <thead className="table-light">
                                 <tr>
                                     <th style={{ minWidth: "80px" }}>年度</th>
-                                    {/* 決算月の翌月からの12ヶ月を表示 */}
                                     {fiscalMonths.map((m) => (
                                         <th key={m}>{m}月</th>
                                     ))}
-                                                {/* 追加：最後のカラム AR */}
-                                                <th style={{ minWidth: "70px" }} className="table-primary">AR</th>
+                                    <th style={{ minWidth: "70px" }} className="table-primary">AR</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -249,6 +256,7 @@ export default function CustomerFinancialTable() {
                                                 </td>
                                             );
                                         })}
+                                        <td>-</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -256,7 +264,6 @@ export default function CustomerFinancialTable() {
                     </div>
                 )}
             </div>
-            
         </div>
     );
 }

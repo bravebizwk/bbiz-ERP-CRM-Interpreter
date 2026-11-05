@@ -14,7 +14,6 @@ export default function Header() {
       <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
         <Menu />
       </button>
-      <div className="header-title">BraveBiz</div>
         <div className="header-log-companyname">
           <img src="/logo.png" alt="Site Logo" className="logo" />
           <div className="header-title">BraveBiz</div>

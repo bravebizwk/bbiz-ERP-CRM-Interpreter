@@ -22,16 +22,26 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                 <div className="flex items-center justify-between bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <div className="flex items-center space-x-4">
                         <Link
-                            href="/projects"
-                            className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            href="/orderclients"
+                            className="p-2 text-white hover:text-gray-200 hover:bg-gray-700 rounded-lg transition-colors flex items-center justify-center"
                             title="案件一覧に戻る"
                         >
-                            <ArrowLeft className="w-5 h-5" />
+                            <ArrowLeft className="text-white" style={{ width: '3rem', height: '3rem', color: '#80c8fb'}} />
+
                         </Link>
+
+
 
                 {/* ファイル管理マネージャー（アップロード・一覧・削除・ダウンロード統合） */}
                 <FileListManager projNo={projNo} currentUserName="Nishimura" />
                    
+                        <Link
+                            href="/orderclients"
+                            className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="案件一覧に戻る"
+                        >
+                            <ArrowLeft className="text-white" style={{ width: '3rem', height: '3rem', color: '#80c8fb' }} />
+                        </Link>
             </div>
             </div>
             </div>
