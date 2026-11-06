@@ -7,6 +7,8 @@ interface ModalProps {
     onSubmitSuccess?: () => void;
 }
 
+
+
 export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: ModalProps) {
     const [activeTab, setActiveTab] = useState<'basic' | 'contents' | 'date' | 'text'>('basic');
     const [submitting, setSubmitting] = useState(false);
@@ -17,6 +19,13 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
     const [customerOptions, setCustomerOptions] = useState<string[]>([]);
     const [partnerOptions, setPartnerOptions] = useState<string[]>([]);
     const [interpreterOptions, setInterpreterOptions] = useState<string[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
+
+
+    const [selectedLarge, setSelectedLarge] = useState("");
+    const [selectedMedium, setSelectedMedium] = useState("");
+    
+
 
     const [formData, setFormData] = useState({
         proj_no: '',
@@ -52,11 +61,18 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
 
         const fetchOptions = async () => {
             try {
-                const [projRes, custRes, partRes, intpRes] = await Promise.all([
+                const [
+                    projRes,
+                    custRes,
+                    partRes,
+                    intpRes,
+                    categoryRes
+                ] = await Promise.all([
                     fetch('/api/projects'),
                     fetch('/api/customers'),
                     fetch('/api/partners'),
-                    fetch('/api/interpreters-list')
+                    fetch('/api/interpreters-list'),
+                    fetch('/api/category-master')
                 ]);
 
                 if (projRes.ok) {
@@ -66,6 +82,9 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                 if (custRes.ok) setCustomerOptions(await custRes.json());
                 if (partRes.ok) setPartnerOptions(await partRes.json());
                 if (intpRes.ok) setInterpreterOptions(await intpRes.json());
+                if (categoryRes.ok) {
+                    setCategories(await categoryRes.json());
+                }
             } catch (err) {
                 console.error('候補データの取得に失敗しました:', err);
             }
@@ -76,7 +95,38 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
 
     if (!isOpen) return null;
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const largeCategories = categories.filter(
+        x => x.category_type === 'LARGE'
+    );
+
+    const mediumCategories = categories.filter(
+        x =>
+            x.category_type === 'MEDIUM' &&
+            x.parent_code === selectedLarge
+    );
+
+    const smallCategories = categories.filter(
+        x =>
+            x.category_type === 'SMALL' &&
+            x.parent_code === selectedMedium
+    );
+
+    const languageCategories = categories.filter(
+        x => x.category_type === 'LANGUAGE'
+    );
+
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+        const { name, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [name]: name.includes('count')
+                ? Number(value)
+                : value,
+        }));
+    };
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
@@ -110,6 +160,27 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
             setSubmitting(false);
         }
     };
+
+    const largeCategories =
+        categories.filter(
+            x => x.category_type === 'LARGE'
+        );
+
+    const mediumCategories =
+        categories.filter(
+            x => x.category_type === 'MEDIUM'
+        );
+
+    const smallCategories =
+        categories.filter(
+            x => x.category_type === 'SMALL'
+        );
+
+    const languageCategories =
+        categories.filter(
+            x => x.category_type === 'LANGUAGE'
+        );
+
 
     return (
         <div style={styles.overlay} onClick={onClose}>
@@ -214,33 +285,86 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>大カテゴリ</label>
                                     <select name="large_category" value={formData.large_category} onChange={handleChange} style={styles.input}>
-                                        <option value="">選択してください</option>
-                                        <option value="四半期決算短信">四半期決算短信</option>
-                                        <option value="決算短信">決算短信</option>
-                                        <option value="リリース">リリース</option>
-                                        <option value="IR資料">IR資料</option>
+                                        <select
+                                            name="large_category"
+                                            value={formData.large_category}
+                                            onChange={handleChange}
+                                            style={styles.input}
+                                        >
+                                            <option value="">選択してください</option>
+
+                                            {largeCategories.map((item) => (
+                                                <option
+                                                    key={item.category_code}
+                                                    value={item.category_name}
+                                                >
+                                                    {item.category_name}
+                                                </option>
+                                            ))}
+                                        </select>   
                                     </select>
                                 </div>
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>中カテゴリ</label>
-                                    <select name="medium_category" value={formData.medium_category} onChange={handleChange} style={styles.input}>
+                                    <select
+                                        name="medium_category"
+                                        value={formData.medium_category}
+                                        onChange={handleChange}
+                                        style={styles.input}
+                                    >
                                         <option value="">選択してください</option>
-                                        <option value="第一">第一</option>
-                                        <option value="第二">第二</option>
-                                        <option value="第三">第三</option>
-                                        <option value="第四">第四</option>
+
+                                        {mediumCategories.map((item) => (
+                                            <option
+                                                key={item.category_code}
+                                                value={item.category_name}
+                                            >
+                                                {item.category_name}
+                                            </option>
+                                        ))}
                                     </select>
+
                                 </div>
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>小カテゴリ</label>
-                                    <input type="text" name="small_category" value={formData.small_category} onChange={handleChange} style={styles.input} />
+                                    <select
+                                        name="small_category"
+                                        value={formData.small_category}
+                                        onChange={handleChange}
+                                        style={styles.input}
+                                    >
+                                        <option value="">選択してください</option>
+
+                                        {smallCategories.map((item) => (
+                                            <option
+                                                key={item.category_code}
+                                                value={item.category_name}
+                                            >
+                                                {item.category_name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>言語カテゴリ</label>
                                     <select name="language_category" value={formData.language_category} onChange={handleChange} style={styles.input}>
-                                        <option value="">選択してください</option>
-                                        <option value="英訳">英訳</option>
-                                        <option value="和訳">和訳</option>
+                                        <select
+                                            name="language_category"
+                                            value={formData.language_category}
+                                            onChange={handleChange}
+                                            style={styles.input}
+                                        >
+                                            <option value="">選択してください</option>
+
+                                            {languageCategories.map((item) => (
+                                                <option
+                                                    key={item.category_code}
+                                                    value={item.category_name}
+                                                >
+                                                    {item.category_name}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </select>
                                 </div>
                             </div>

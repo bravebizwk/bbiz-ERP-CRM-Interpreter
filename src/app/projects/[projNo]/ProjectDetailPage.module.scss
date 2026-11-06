@@ -1,0 +1,37 @@
+// ProjectDetailPage.module.scss
+.container {
+    display: flex;
+    flex-direction: column; // スマホ等の狭い画面では縦並び
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+    margin-top: 0rem;
+    padding-top: 0rem;
+
+    // 768px以上（mdサイズ）で自動的に横並びに切り替え
+    @media (min-width: 768px) {
+        flex-direction: row;
+    }
+}
+
+.backButtonWrapper {
+    flex-shrink: 0;
+    padding-top: 0.5rem;
+}
+
+.managerWrapper {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+
+.backButtonWrapper {
+    flex-shrink: 0;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; // 1つ目を上端、2つ目を下端に配置
+    height: 100%; // 親の高さ全体いっぱいに広げる
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Upload, FileText, Loader2, FolderKanban, Calendar, FileSpreadsheet, Layers, Terminal, Download, Trash2 } from 'lucide-react';
+import { Upload, FileText, Loader2, FolderKanban, Layers, Terminal, Download, Trash2 } from 'lucide-react';
 import styles from './FileUploadComponent.module.scss';
 
 interface ProjectFile {
@@ -131,7 +131,7 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
         }
     };
 
-    // ファイルアップロード処理
+    // ファイルアップロード処理（ファイル名変更 ＆ 文字数チェック機能付き）
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!file) {
@@ -140,11 +140,48 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
         }
 
         setUploading(true);
-        addLog('Azure Blob Storage へのファイルアップロードを開始します...', 'info');
+        addLog('ファイル名のタイムスタンプ付与とアップロードを開始します...', 'info');
 
         try {
+            // --- 1. ファイル名に _YYMMDD_hhmm を付与する処理 ---
+            const originalName = file.name;
+            const lastDotIndex = originalName.lastIndexOf('.');
+
+            let baseName = originalName;
+            let extension = '';
+
+            if (lastDotIndex !== -1) {
+                baseName = originalName.substring(0, lastDotIndex);
+                extension = originalName.substring(lastDotIndex); // ドットを含む拡張子 (.pdf 等)
+            }
+
+            // 現在日時から YYMMDD_hhmm を生成
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+
+            const timestampStr = `${yy}${mm}${dd}_${hh}${min}`;
+            const newFileName = `${baseName}_${timestampStr}${extension}`;
+
+            // --- 2. 文字数オーバーのチェック処理 ---
+            const MAX_FILENAME_LENGTH = 150; // データベースや運用上の上限文字数（必要に応じて変更してください）
+
+            if (newFileName.length > MAX_FILENAME_LENGTH) {
+                throw new Error(`ファイル名が長すぎます（現在: ${newFileName.length}文字 / 上限: ${MAX_FILENAME_LENGTH}文字）。元のファイル名を短くしてください。`);
+            }
+            // ------------------------------------
+
+            // 新しい名前で File オブジェクトを作り直す
+            const renamedFile = new File([file], newFileName, { type: file.type });
+
+            addLog(`ファイル名を変更しました: ${originalName} ➔ ${newFileName}`, 'info');
+            // ----------------------------------------------------
+
             const fd = new FormData();
-            fd.append('file', file);
+            fd.append('file', renamedFile); // 変更後のファイルをセット
             fd.append('proj_no', projNo);
             fd.append('upload_user', uploadUser);
 
@@ -173,10 +210,12 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
         } catch (err: any) {
             const errorMsg = err.message || '予期せぬエラーが発生しました。';
             addLog(`エラー: ${errorMsg}`, 'error');
+            alert(errorMsg); // ユーザーにポップアップでエラーを分かりやすく通知する場合
         } finally {
             setUploading(false);
         }
     };
+
 
     const handleDeleteFile = async (fileId: number) => {
         if (!confirm('このファイルを削除（非表示）してもよろしいですか？')) return;
@@ -199,18 +238,8 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
         }
     };
 
-    // 文字列表記用のヘルパーコンポーネント
-    const ReadOnlyField = ({ label, value }: { label: string; value: string | number | undefined }) => (
-        <div style={{ marginBottom: '12px' }}>
-            <span style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginBottom: '4px' }}>{label}</span>
-            <div style={{ padding: '8px 12px', backgroundColor: 'rgba(15, 23, 42, 0.6)', border: '1px solid #334155', borderRadius: '6px', color: '#f8fafc', fontSize: '0.875rem' }}>
-                {value || '-'}
-            </div>
-        </div>
-    );
-
     return (
-        <div className={styles.container} style={{ width: '90%', maxWidth: '1200px', margin: '0 auto' }}>
+        <div className={styles.container}>
             {/* ヘッダー */}
             <div className={styles.header}>
                 <h3 className={styles.headerTitle}>
@@ -221,205 +250,183 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
                 <span className={styles.badge}>案件: {projNo}</span>
             </div>
 
-            <div className={styles.body} style={{ maxHeight: '75vh', overflowY: 'auto' }}>
+            <div className={styles.body}>
 
-                {/* 1. 基本・カテゴリ セクション（文字列表記） */}
-                <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', border: '1px solid #334155' }}>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
-                        <Layers className="w-4 h-4" /> 基本・カテゴリ情報
+                {/* 1. 基本・カテゴリ セクション（横に3つのカード） */}
+                <div className={styles.section}>
+                    <h4 className={`${styles.sectionTitle} ${styles.large}`}>
+                        <Layers className="w-5 h-5" /> 基本・カテゴリ情報
                     </h4>
 
-                    <ReadOnlyField label="顧客名 (proj_customer)" value={projectData.proj_customer} />
-                    <ReadOnlyField label="パートナー名 (proj_partner_name)" value={projectData.proj_partner_name} />
-                    <ReadOnlyField label="通訳者名 英語 (intp_name_en)" value={projectData.intp_name_en} />
+                    <div className={styles.row3Cols}>
+                        <div className={styles.readOnlyCard}>
+                            <span className={styles.cardLabel}>顧客名</span>
+                            <div className={styles.cardValue}>{projectData.proj_customer || '-'}</div>
 
-                    <div className={styles.row}>
-                        <ReadOnlyField label="大カテゴリ" value={projectData.large_category} />
-                        <ReadOnlyField label="中カテゴリ" value={projectData.medium_category} />
-                    </div>
-
-                    <div className={styles.row}>
-                        <ReadOnlyField label="小カテゴリ" value={projectData.small_category} />
-                        <ReadOnlyField label="言語カテゴリ" value={projectData.language_category} />
-                    </div>
-                </div>
-
-                {/* 2. コンテンツ (CT) セクション（文字列表記） */}
-                <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', border: '1px solid #334155' }}>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
-                        <FileText className="w-4 h-4" /> コンテンツ (CT)
-                    </h4>
-                    <div className={styles.row}>
-                        <ReadOnlyField label="CT 1" value={projectData.proj_ct_1} />
-                        <ReadOnlyField label="CT 2" value={projectData.proj_ct_2} />
-                    </div>
-                    <div className={styles.row}>
-                        <ReadOnlyField label="CT 3" value={projectData.proj_ct_3} />
-                        <ReadOnlyField label="CT 4" value={projectData.proj_ct_4} />
-                    </div>
-                </div>
-
-                {/* 3. 日付・スケジュール セクション（文字列表記） */}
-                <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', border: '1px solid #334155' }}>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
-                        <Calendar className="w-4 h-4" /> スケジュール
-                    </h4>
-                    <div className={styles.row}>
-                        <ReadOnlyField label="発行日 (proj_issue)" value={projectData.proj_issue} />
-                        <ReadOnlyField label="リクエスト (proj_request)" value={projectData.proj_request} />
-                    </div>
-                    <div className={styles.row}>
-                        <ReadOnlyField label="可能日 (proj_possible)" value={projectData.proj_possible} />
-                        <ReadOnlyField label="日付 1 (proj_date_1)" value={projectData.proj_date_1} />
-                    </div>
-                    <div className={styles.row}>
-                        <ReadOnlyField label="日付 2 (proj_date_2)" value={projectData.proj_date_2} />
-                        <div />
-                    </div>
-                </div>
-
-                {/* 4. フォーマット・数値 セクション（文字列表記） */}
-                <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', border: '1px solid #334155' }}>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
-                        <FileSpreadsheet className="w-4 h-4" /> フォーマット・数値
-                    </h4>
-                    <div className={styles.row}>
-                        <ReadOnlyField label="フォーマット (proj_format)" value={projectData.proj_format} />
-                        <ReadOnlyField label="数量形式 (proj_qty_format)" value={projectData.proj_qty_format} />
-                    </div>
-                    <div className={styles.row}>
-                        <ReadOnlyField label="文字数 (proj_char_count)" value={projectData.proj_char_count} />
-                        <ReadOnlyField label="カウント (proj_count)" value={projectData.proj_count} />
-                    </div>
-                </div>
-
-                {/* 5. ファイル添付 セクション */}
-                <form onSubmit={handleUpload}>
-                    <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', border: '1px solid #334155' }}>
-                        <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
-                            <Upload className="w-4 h-4" /> ファイル添付
-                        </h4>
-
-                        <div className={styles.uploadDropzone}>
-                            <input
-                                id="fileInput"
-                                type="file"
-                                onChange={handleFileChange}
-                                style={{ display: 'none' }}
-                            />
-                            <label htmlFor="fileInput" className={styles.dropzoneContent}>
-                                <FileText className={`w-10 h-10 ${styles.icon}`} />
-                                <span className={styles.textMain}>
-                                    {file ? file.name : 'クリックしてファイルを選択'}
-                                </span>
-                                <span className={styles.textSub}>PDF, 画像, Word / Excel 等</span>
-                            </label>
+                            <span className={styles.cardLabel} style={{ marginTop: '8px' }}>内容</span>
+                            <div className={styles.cardValue}>{projectData.language_category || '-'}</div>
+                            <div className={styles.cardValue}>{projectData.large_category || '-'}</div>
+                            <div className={styles.cardValue}>{projectData.medium_category || '-'}</div>
+                            <div className={styles.cardValue}>{projectData.small_category || '-'}</div>
+                            <div className={styles.cardValue}>{projectData.proj_char_count || '-'}</div>
+                            <div className={styles.cardValue}>{projectData.proj_count || '-'}</div>
                         </div>
 
-                        {file && (
-                            <div className={styles.filePreview}>
-                                <span>選択中: <strong>{file.name}</strong> ({(file.size / 1024).toFixed(1)} KB)</span>
-                                <button
-                                    type="button"
-                                    onClick={() => { setFile(null); addLog('選択ファイルをクリアしました。', 'warning'); }}
-                                    className={styles.removeBtn}
-                                >
-                                    削除
-                                </button>
-                            </div>
-                        )}
+                        <div className={styles.readOnlyCard}>
+                            <span className={styles.cardLabel}>スケジュール</span>
+                            <span className={styles.cardLabel} style={{ marginTop: '4px' }}>発注日</span>
+                            <div className={styles.cardValue}>{projectData.proj_issue || '-'}</div>
+                            <span className={styles.cardLabel} style={{ marginTop: '4px' }}>納期</span>
+                            <div className={styles.cardValue}>{projectData.proj_request || '-'}</div>
+                            <span className={styles.cardLabel} style={{ marginTop: '4px' }}>納品形式</span>
+                            <div className={styles.cardValue}>{projectData.proj_format || '-'}</div>
+                        </div>
 
-                        <button
-                            type="submit"
-                            disabled={!file || uploading}
-                            className={styles.submitBtn}
-                            style={{ marginTop: '16px' }}
-                        >
-                            {uploading ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    アップロード中...
-                                </>
+                        <div className={styles.readOnlyCard}>
+                            <span className={styles.cardLabel}>備考</span>
+                            <div className={styles.cardValue}>{projectData.proj_ct_1 || '-'}</div>
+                            <div className={styles.cardValue}>{projectData.proj_ct_2 || '-'}</div>
+                            <div className={styles.cardValue}>{projectData.proj_ct_3 || '-'}</div>
+                            <div className={styles.cardValue}>{projectData.proj_ct_4 || '-'}</div>
+                        </div>
+                    </div>
+                </div>
+
+
+                {/* 下部エリア：3カラムのグリッドで「ファイル一覧（2カラム分）」と「ファイル添付（1カラム分）」を横並び配置 */}
+                <div className={styles.row3Cols}>
+
+                    {/* 6. 案件ファイル一覧（左側・2カラム分の幅） */}
+                    <div className={`${styles.section} ${styles.colSpan2}`} style={{ marginBottom: 0 }}>
+                        <div className={styles.consoleHeader} style={{ marginBottom: '12px' }}>
+                            <span className={styles.consoleTitle}>
+                                <FileText className="w-3.5 h-3.5" /> 案件ファイル一覧 ({files.length}件)
+                            </span>
+                            <span className={styles.consoleTag}>Attached Files</span>
+                        </div>
+
+                        <div className={styles.tableWrapper} style={{ maxHeight: '250px' }}>
+                            {files.length === 0 ? (
+                                <div className={styles.emptyText}>
+                                    アップロードされたファイルはまだありません。
+                                </div>
                             ) : (
-                                <>
-                                    <Upload className="w-5 h-5" />
-                                    Azure Blobへアップロード & 登録
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </form>
-
-                {/* 6. 案件ファイル一覧（Bootstrapテーブル形式で縦に整列） */}
-                <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', border: '1px solid #334155' }}>
-                    <div className={styles.consoleHeader} style={{ marginBottom: '12px' }}>
-                        <span className={styles.consoleTitle}>
-                            <FileText className="w-3.5 h-3.5" /> 案件ファイル一覧 ({files.length}件)
-                        </span>
-                        <span className={styles.consoleTag}>Attached Files</span>
-                    </div>
-
-                    <div className={styles.consoleBody} style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                        {files.length === 0 ? (
-                            <div style={{ padding: '12px', color: '#94a3b8', textAlign: 'center' }}>
-                                アップロードされたファイルはまだありません。
-                            </div>
-                        ) : (
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', color: '#f8fafc' }}>
-                                <thead>
-                                    <tr style={{ borderBottom: '1px solid #334155', color: '#94a3b8', textAlign: 'left' }}>
-                                        <th style={{ padding: '6px 8px', fontWeight: 600 }}>ファイル名</th>
-                                        <th style={{ padding: '6px 8px', fontWeight: 600, width: '80px', textAlign: 'right' }}>サイズ</th>
-                                        <th style={{ padding: '6px 8px', fontWeight: 600, width: '160px' }}>アップロード日時</th>
-                                        <th style={{ padding: '6px 8px', fontWeight: 600, width: '120px' }}>アップロード者</th>
-                                        <th style={{ padding: '6px 8px', fontWeight: 600, width: '60px', textAlign: 'center' }}>操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {files.map((f) => (
-                                        <tr key={f.id} style={{ borderBottom: '1px solid rgba(51, 65, 85, 0.4)' }}>
-                                            <td style={{ padding: '6px 8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '250px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                    <FileText className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" style={{ marginTop: '2px' }} />
-                                                    <span style={{ fontWeight: 600, color: '#f8fafc' }} title={f.file_name}>{f.file_name}</span>
-                                                </div>
-                                            </td>
-                                            <td style={{ padding: '6px 8px', textAlign: 'right', color: '#cbd5e1', whiteSpace: 'nowrap' }}>
-                                                {(f.file_size ? f.file_size / 1024 : 0).toFixed(1)} KB
-                                            </td>
-                                            <td style={{ padding: '6px 8px', color: '#cbd5e1', whiteSpace: 'nowrap' }}>
-                                                {new Date(f.upload_date).toLocaleString()}
-                                            </td>
-                                            <td style={{ padding: '6px 8px', color: '#cbd5e1', whiteSpace: 'nowrap' }}>
-                                                {f.upload_user || 'system'}
-                                            </td>
-                                            <td style={{ padding: '6px 8px', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                                                    <a
-                                                        href={f.blob_url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        style={{ padding: '2px 4px', color: '#38bdf8', borderRadius: '4px' }}
-                                                        title="ダウンロード / 表示"
-                                                    >
-                                                        <Download className="w-3.5 h-3.5" />
-                                                    </a>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDeleteFile(f.id)}
-                                                        style={{ background: 'none', border: 'none', padding: '2px 4px', color: '#fca5a5', cursor: 'pointer', borderRadius: '4px' }}
-                                                        title="削除"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </div>
-                                            </td>
+                                <table className={styles.fileTable}>
+                                    <thead>
+                                        <tr>
+                                            <th>ファイル名</th>
+                                            <th style={{ width: '80px', textAlign: 'right' }}>サイズ</th>
+                                            <th style={{ width: '140px' }}>アップロード日時</th>
+                                            <th style={{ width: '100px' }}>担当者</th>
+                                            <th style={{ width: '60px', textAlign: 'center' }}>操作</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
+                                    </thead>
+                                    <tbody>
+                                        {files.map((f) => (
+                                            <tr key={f.id}>
+                                                <td className={styles.fileNameCol}>
+                                                    <div className={styles.fileNameItem}>
+                                                        <FileText className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
+                                                        <span title={f.file_name}>{f.file_name}</span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ textAlign: 'right' }}>
+                                                    {(f.file_size ? f.file_size / 1024 : 0).toFixed(1)} KB
+                                                </td>
+                                                <td>
+                                                    {new Date(f.upload_date).toLocaleString()}
+                                                </td>
+                                                <td>
+                                                    {f.upload_user || 'system'}
+                                                </td>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    <div className={styles.actionBtnGroup}>
+                                                        <a
+                                                            href={f.blob_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={styles.iconLink}
+                                                            title="ダウンロード / 表示"
+                                                        >
+                                                            <Download className="w-3.5 h-3.5" />
+                                                        </a>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteFile(f.id)}
+                                                            className={styles.iconBtn}
+                                                            title="削除"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
                     </div>
+
+
+                    {/* 5. ファイル添付 セクション（右側・1カラム分の幅） */}
+                    <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div className={styles.section} style={{ marginBottom: 0, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div>
+                                <h4 className={styles.sectionTitle}>
+                                    <Upload className="w-4 h-4" /> ファイル添付
+                                </h4>
+
+                                <div className={styles.uploadDropzone} style={{ padding: '20px 12px' }}>
+                                    <input
+                                        id="fileInput"
+                                        type="file"
+                                        onChange={handleFileChange}
+                                        style={{ display: 'none' }}
+                                    />
+                                    <label htmlFor="fileInput" className={styles.dropzoneContent}>
+                                        <FileText className={`w-8 h-8 ${styles.icon}`} />
+                                        <span className={styles.textMain}>
+                                            {file ? file.name : 'ファイルを選択'}
+                                        </span>
+                                        <span className={styles.textSub}>PDF, 画像, Word / Excel等</span>
+                                    </label>
+                                </div>
+
+                                {file && (
+                                    <div className={styles.filePreview}>
+                                        <span>選択: <strong>{file.name}</strong></span>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setFile(null); addLog('選択ファイルをクリアしました。', 'warning'); }}
+                                            className={styles.removeBtn}
+                                        >
+                                            削除
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={!file || uploading}
+                                className={styles.submitBtn}
+                            >
+                                {uploading ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        アップロード中...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload className="w-5 h-5" />
+                                        Azure Blobへアップロード
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+
                 </div>
 
             </div>

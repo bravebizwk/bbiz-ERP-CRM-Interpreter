@@ -18,7 +18,7 @@ $accent-btn-hover: #1e4b8a;
     background-color: $bg-primary;
     color: $text-light;
     width: 100%;
-    max-width: 650px;
+    max-width: 1500px;
     margin: 0 auto;
     border-radius: 8px;
     overflow: hidden;
@@ -26,7 +26,7 @@ $accent-btn-hover: #1e4b8a;
     font-family: inherit;
 
     .header {
-        padding: 16px 24px;
+        padding: -4px 24px;
         background-color: $bg-header;
         display: flex;
         justify-content: space-between;
@@ -46,101 +46,110 @@ $accent-btn-hover: #1e4b8a;
         }
 
         .badge {
-            font-size: 0.75rem;
+            font-size: 1.12rem;
             background-color: rgba(56, 189, 248, 0.15);
             border: 1px solid rgba(56, 189, 248, 0.3);
             padding: 4px 10px;
             border-radius: 12px;
             color: $accent-blue;
-        }
-    }
-
-    .tabs {
-        display: flex;
-        background-color: $bg-tab;
-        border-bottom: 1px solid $border-color;
-        overflow-x: auto;
-
-        .tabBtn {
-            flex: 1;
-            padding: 12px 8px;
-            background-color: transparent;
-            border: none;
-            color: $text-muted;
-            font-size: 0.85rem;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-
-            &:hover {
-                color: $text-light;
-                background-color: rgba(255, 255, 255, 0.03);
-            }
-
-            &.active {
-                color: $accent-blue;
-                border-bottom: 2px solid $accent-blue;
-                font-weight: 600;
-            }
+            margin-bottom: rem;
         }
     }
 
     .body {
         padding: 20px 24px;
-        max-height: 55vh;
+        max-height: 75vh;
         overflow-y: auto;
         background-color: $bg-primary;
+    }
 
-        .formGroup {
+    // セクション構造（カード風スタイル）
+    .section {
+        margin-bottom: 24px;
+        padding: 16px;
+        background-color: rgba(15, 23, 42, 0.4);
+        border-radius: 8px;
+        border: 1px solid $border-color;
+
+        .sectionTitle {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: $accent-blue;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             margin-bottom: 16px;
+            border-bottom: 1px solid $border-color;
+            padding-bottom: 8px;
 
-            &:last-child {
-                margin-bottom: 0;
-            }
-
-            .label {
-                display: block;
-                font-size: 0.85rem;
-                color: $text-label;
-                margin-bottom: 6px;
-            }
-
-            .input,
-            .select {
-                width: 100%;
-                padding: 8px 12px;
-                background-color: $bg-input;
-                border: 1px solid $border-color;
-                border-radius: 6px;
-                color: $text-light;
-                outline: none;
-                box-sizing: border-box;
-                font-size: 0.875rem;
-                transition: border-color 0.2s;
-
-                &:focus {
-                    border-color: $accent-blue;
-                }
-
-                &[type="date"] {
-                    cursor: pointer;
-                }
+            &.large {
+                font-size: 1.2rem;
             }
         }
+    }
 
-        .row {
-            display: grid;
+    // グリッドレイアウト（2カラム / 3カラム）
+    .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+
+        @media (min-width: 768px) {
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+        }
+    }
 
-            @media (max-width: 480px) {
-                grid-template-columns: 1fr;
-            }
+    .row3Cols {
+        display: grid;
+        grid-template-columns: 1fr; // スマホサイズは1列（縦並び）
+        gap: 16px;
+        margin-bottom: 16px;
+
+        @media (min-width: 768px) {
+            grid-template-columns: repeat(3, 1fr); // PCサイズで3カラム横並び
+        }
+    }
+
+    // 表示用カード・フィールド
+    .readOnlyCard {
+        background-color: $bg-input;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid $border-color;
+
+        .cardLabel {
+            display: block;
+            font-size: 0.75rem;
+            color: $text-muted;
+            margin-bottom: 4px;
+        }
+
+        .cardValue {
+            font-size: 0.95rem;
+            color: $text-light;
+            font-weight: 500;
+            word-break: break-all;
+        }
+    }
+
+    .readOnlyField {
+        margin-bottom: 12px;
+
+        .fieldLabel {
+            display: block;
+            font-size: 0.75rem;
+            color: $text-muted;
+            margin-bottom: 4px;
+        }
+
+        .fieldValue {
+            padding: 8px 12px;
+            background-color: rgba(15, 23, 42, 0.6);
+            border: 1px solid $border-color;
+            border-radius: 6px;
+            color: $text-light;
+            font-size: 0.875rem;
+            word-break: break-all;
         }
     }
 
@@ -164,6 +173,7 @@ $accent-btn-hover: #1e4b8a;
             flex-direction: column;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
 
             .icon {
                 color: $accent-blue;
@@ -235,7 +245,87 @@ $accent-btn-hover: #1e4b8a;
         }
     }
 
-    // リアルタイム ログ・コンソール欄（Bootstrap/ダークターミナル風）
+    // テーブルスタイル
+    .tableWrapper {
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: $bg-console;
+        border: 1px solid $border-color;
+        border-radius: 6px;
+        padding: 4px;
+
+        .emptyText {
+            padding: 16px;
+            color: $text-muted;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .fileTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            color: $text-light;
+
+            th {
+                padding: 6px 8px;
+                font-weight: 600;
+                color: $text-muted;
+                text-align: left;
+                border-bottom: 1px solid $border-color;
+            }
+
+            td {
+                padding: 6px 8px;
+                border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+            }
+
+            .fileNameCol {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 250px;
+
+                .fileNameItem {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+            }
+
+            .actionBtnGroup {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+
+                .iconLink {
+                    padding: 2px 4px;
+                    color: $accent-blue;
+                    border-radius: 4px;
+
+                    &:hover {
+                        opacity: 0.8;
+                    }
+                }
+
+                .iconBtn {
+                    background: none;
+                    border: none;
+                    padding: 2px 4px;
+                    color: #fca5a5;
+                    cursor: pointer;
+                    border-radius: 4px;
+
+                    &:hover {
+                        opacity: 0.8;
+                    }
+                }
+            }
+        }
+    }
+
+    // リアルタイム ログ・コンソール欄
     .consoleContainer {
         background-color: $bg-header;
         border-top: 1px solid $border-color;
@@ -330,3 +420,15 @@ $accent-btn-hover: #1e4b8a;
         }
     }
 }
+
+// FileUploadComponent.module.scss に追加
+
+// 3カラムグリッド内で2カラム分の幅（2/3）を取るクラス
+.colSpan2 {
+    grid-column: span 1;
+
+    @media (min-width: 768px) {
+        grid-column: span 2; // PCサイズでは2カラム分の幅にする
+    }
+}
+
