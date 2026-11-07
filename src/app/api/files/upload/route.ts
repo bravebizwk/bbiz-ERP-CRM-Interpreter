@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         console.log('[API /files/upload] 2. PostgreSQL (Neon) へのメタデータ保存を開始します...');
         const savedFileRecord = await insertProjectFile({
             proj_no: projNo,
-            file_name: file.name,
+            file_name: blobName, // 💡 修正: Azure上の実名（タイムスタンプ付き）をデータベースに保存
             blob_url: blobUrl,
             file_size: file.size,
             mime_type: file.type,

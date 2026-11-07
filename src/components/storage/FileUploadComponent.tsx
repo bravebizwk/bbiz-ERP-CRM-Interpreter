@@ -91,6 +91,15 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
         }
     };
 
+
+
+    const handleDownload = (fileName: string) => {
+        // APIルートへアクセスすると、自動的にブラウザのダウンロードが始まります
+        window.location.href = `/api/download?file=${encodeURIComponent(fileName)}`;
+    };
+
+
+
     // プロジェクト情報の再取得用
     const fetchProjectData = async () => {
         try {
@@ -352,8 +361,11 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
                                             <tr key={f.id}>
                                                 <td className={styles.fileNameCol}>
                                                     <div className={styles.fileNameItem}>
-                                                        <FileText className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
-                                                        <span title={f.file_name}>{f.file_name}</span>
+                                                        <FileText className="w-8 h-8 text-sky-400 flex-shrink-0" />
+                                                        <span title={f.file_name}>
+                                                            {f.file_name.replace(/^\d+-/, '')}
+                                                        </span>
+
                                                     </div>
                                                 </td>
                                                 <td style={{ textAlign: 'right' }}>
@@ -367,15 +379,17 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
                                                 </td>
                                                 <td style={{ textAlign: 'center' }}>
                                                     <div className={styles.actionBtnGroup}>
-                                                        <a
-                                                            href={f.blob_url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
+                                                        {/* 💡 aタグからbutton（またはonClick付きの要素）に変更 */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDownload(f.file_name)} // 👈 実際のファイル名が入っているプロパティを指定
                                                             className={styles.iconLink}
-                                                            title="ダウンロード / 表示"
+                                                            title="ダウンロード"
+                                                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                                                         >
                                                             <Download className="w-3.5 h-3.5" />
-                                                        </a>
+                                                        </button>
+
                                                         <button
                                                             type="button"
                                                             onClick={() => handleDeleteFile(f.id)}
@@ -386,6 +400,8 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
                                                         </button>
                                                     </div>
                                                 </td>
+
+                                           
                                             </tr>
                                         ))}
                                     </tbody>
