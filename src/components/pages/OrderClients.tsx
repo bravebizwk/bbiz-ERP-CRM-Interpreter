@@ -130,38 +130,36 @@ export default function ProjectList() {
                                 <th style={thStyle}>カウント</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {filteredProjects.map((proj) => (
-                                <tr key={proj.proj_no} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                                    <td style={{ padding: '12px 8px' }}>
+                            <tbody>
+                                {filteredProjects.map((proj, index) => (
+                                    <tr key={`${proj.proj_no}-${index}`} style={{ borderBottom: '1px solid #f0f0f0' }}><td style={{ padding: '12px 8px' }}>
                                         <Link
                                             href={`/projects/${proj.proj_no}`}
                                             style={{ color: '#a3f8fc', textDecoration: 'underline', fontWeight: 500 }}
                                         >
                                             {proj.proj_no}
                                         </Link>
-                                    </td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_customer}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_partner_name || '-'}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.intp_name_en || '-'}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.large_category || '-'}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.medium_category || '-'}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.small_category || '-'}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.language_category || '-'}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_ct_1}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_ct_2}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_ct_3}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_ct_4}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_issue}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_request}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_possible}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_format}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_qty_format}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_char_count}</td>
-                                    <td style={{ padding: '12px 8px' }}>{proj.proj_count}</td>
-                                </tr>
-                            ))}
-                        </tbody>
+                                    </td><td style={{ padding: '12px 8px' }}>{proj.proj_customer}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_partner_name || '-'}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.intp_name_en || '-'}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.large_category || '-'}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.medium_category || '-'}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.small_category || '-'}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.language_category || '-'}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_ct_1}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_ct_2}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_ct_3}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_ct_4}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_issue}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_request}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_possible}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_format}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_qty_format}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_char_count}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_count}</td></tr>
+                                ))}
+                            </tbody>
+
                     </table>
                 </div>
             )}
