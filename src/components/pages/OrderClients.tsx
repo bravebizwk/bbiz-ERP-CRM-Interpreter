@@ -23,7 +23,7 @@ interface Project {
     medium_category?: string;
     small_category?: string;
     language_category?: string;
-    proj_partner_name?: string;
+    proj_partner_code?: string;
     intp_name_en?: string;
 }
 
@@ -75,7 +75,7 @@ export default function ProjectList() {
                     onClick={() => setIsModalOpen(true)}
                     style={{
                         padding: '10px 20px',
-                        backgroundColor: '#21559d',
+                        backgroundColor: '#2279a2ba',
                         color: '#fff',
                         border: 'none',
                         borderRadius: '6px',
@@ -111,8 +111,8 @@ export default function ProjectList() {
                             <tr style={{ borderBottom: '2px solid #75abdb' }}>
                                 <th style={thStyle}>案件番号</th>
                                 <th style={thStyle}>顧客名</th>
-                                <th style={thStyle}>パートナー名</th>
-                                <th style={thStyle}>通訳者名 (EN)</th>
+                                <th style={thStyle}>Partner</th>
+                                <th style={thStyle}>翻訳</th>
                                 <th style={thStyle}>大カテゴリ</th>
                                 <th style={thStyle}>中カテゴリ</th>
                                 <th style={thStyle}>小カテゴリ</th>
@@ -140,7 +140,7 @@ export default function ProjectList() {
                                             {proj.proj_no}
                                         </Link>
                                     </td><td style={{ padding: '12px 8px' }}>{proj.proj_customer}</td>
-                                        <td style={{ padding: '12px 8px' }}>{proj.proj_partner_name || '-'}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_partner_code || '-'}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.intp_name_en || '-'}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.large_category || '-'}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.medium_category || '-'}</td>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, FileText, Loader2, FolderKanban, Layers, Terminal, Download, Trash2 } from 'lucide-react';
 import styles from './FileUploadComponent.module.scss';
+import ProjectFormModal from '@/components/pages/ProjectFormModal';
 
 interface ProjectFile {
     id: number;
@@ -39,6 +40,8 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
     const [logs, setLogs] = useState<LogEntry[]>([
         { id: '1', timestamp: '', type: 'info', message: 'コンポーネントが初期化されました。案件番号: ' + projNo }
     ]);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // データベースから取得した案件データを保持するステート
     const [projectData, setProjectData] = useState({
@@ -88,38 +91,35 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
         }
     };
 
+    // プロジェクト情報の再取得用
+    const fetchProjectData = async () => {
+        try {
+            const projRes = await fetch(`/api/projects?proj_no=${projNo}`);
+            if (projRes.ok) {
+                const projData = await projRes.json();
+                const targetProj = Array.isArray(projData)
+                    ? projData.find((p: any) => p.proj_no === projNo)
+                    : projData;
+
+                if (targetProj) {
+                    setProjectData((prev) => ({
+                        ...prev,
+                        ...targetProj,
+                    }));
+                }
+            }
+        } catch (err) {
+            console.error('データの取得に失敗しました:', err);
+        }
+    };
+
     useEffect(() => {
         setMounted(true);
         setLogs([
             { id: '1', timestamp: new Date().toLocaleTimeString(), type: 'info', message: 'コンポーネントが初期化されました。案件番号: ' + projNo }
         ]);
 
-        const fetchData = async () => {
-            try {
-                // 既存のプロジェクトデータを取得
-                const projRes = await fetch(`/api/projects?proj_no=${projNo}`);
-
-                if (projRes.ok) {
-                    const projData = await projRes.json();
-                    const targetProj = Array.isArray(projData)
-                        ? projData.find((p: any) => p.proj_no === projNo)
-                        : projData;
-
-                    if (targetProj) {
-                        setProjectData((prev) => ({
-                            ...prev,
-                            ...targetProj,
-                        }));
-                        addLog('データベースから既存の案件データをロードしました。', 'success');
-                    }
-                }
-            } catch (err) {
-                console.error('データの取得に失敗しました:', err);
-                addLog('データの取得に失敗しました。', 'warning');
-            }
-        };
-
-        void fetchData();
+        void fetchProjectData();
         void fetchFiles();
     }, [projNo]);
 
@@ -143,7 +143,6 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
         addLog('ファイル名のタイムスタンプ付与とアップロードを開始します...', 'info');
 
         try {
-            // --- 1. ファイル名に _YYMMDD_hhmm を付与する処理 ---
             const originalName = file.name;
             const lastDotIndex = originalName.lastIndexOf('.');
 
@@ -152,10 +151,9 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
 
             if (lastDotIndex !== -1) {
                 baseName = originalName.substring(0, lastDotIndex);
-                extension = originalName.substring(lastDotIndex); // ドットを含む拡張子 (.pdf 等)
+                extension = originalName.substring(lastDotIndex);
             }
 
-            // 現在日時から YYMMDD_hhmm を生成
             const now = new Date();
             const yy = String(now.getFullYear()).slice(-2);
             const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -166,22 +164,16 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
             const timestampStr = `${yy}${mm}${dd}_${hh}${min}`;
             const newFileName = `${baseName}_${timestampStr}${extension}`;
 
-            // --- 2. 文字数オーバーのチェック処理 ---
-            const MAX_FILENAME_LENGTH = 150; // データベースや運用上の上限文字数（必要に応じて変更してください）
-
+            const MAX_FILENAME_LENGTH = 150;
             if (newFileName.length > MAX_FILENAME_LENGTH) {
                 throw new Error(`ファイル名が長すぎます（現在: ${newFileName.length}文字 / 上限: ${MAX_FILENAME_LENGTH}文字）。元のファイル名を短くしてください。`);
             }
-            // ------------------------------------
 
-            // 新しい名前で File オブジェクトを作り直す
             const renamedFile = new File([file], newFileName, { type: file.type });
-
             addLog(`ファイル名を変更しました: ${originalName} ➔ ${newFileName}`, 'info');
-            // ----------------------------------------------------
 
             const fd = new FormData();
-            fd.append('file', renamedFile); // 変更後のファイルをセット
+            fd.append('file', renamedFile);
             fd.append('proj_no', projNo);
             fd.append('upload_user', uploadUser);
 
@@ -210,12 +202,11 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
         } catch (err: any) {
             const errorMsg = err.message || '予期せぬエラーが発生しました。';
             addLog(`エラー: ${errorMsg}`, 'error');
-            alert(errorMsg); // ユーザーにポップアップでエラーを分かりやすく通知する場合
+            alert(errorMsg);
         } finally {
             setUploading(false);
         }
     };
-
 
     const handleDeleteFile = async (fileId: number) => {
         if (!confirm('このファイルを削除（非表示）してもよろしいですか？')) return;
@@ -246,16 +237,45 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
                     <FolderKanban className="w-5 h-5" />
                     案件データ & ファイル管理
                 </h3>
-                <h3> {projectData.proj_partner_name} </h3>
-                <span className={styles.badge}>案件: {projNo}</span>
+
+                {/* 💡 右側に寄せるグループ */}
+                <div className={styles.headerRight}>
+                    <div className={styles.titlepartner}>{projectData.proj_partner_name || '-'}</div>
+                    <span className={styles.badge}>案件: {projNo}</span>
+                </div>
             </div>
 
             <div className={styles.body}>
 
-                {/* 1. 基本・カテゴリ セクション（横に3つのカード） */}
+                {/* 1. 基本・カテゴリ セクション */}
                 <div className={styles.section}>
-                    <h4 className={`${styles.sectionTitle} ${styles.large}`}>
-                        <Layers className="w-5 h-5" /> 基本・カテゴリ情報
+                    <h4
+                        className={`${styles.sectionTitle} ${styles.large}`}
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            width: '100%',
+                        }}
+                    >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Layers className="w-5 h-5" /> 基本・カテゴリ情報
+                        </span>
+
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            style={{
+                                padding: '10px 24px',
+                                backgroundColor: '#21559d',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontWeight: 400,
+                            }}
+                        >
+                            + 編集
+                        </button>
                     </h4>
 
                     <div className={styles.row3Cols}>
@@ -292,11 +312,10 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
                     </div>
                 </div>
 
-
-                {/* 下部エリア：3カラムのグリッドで「ファイル一覧（2カラム分）」と「ファイル添付（1カラム分）」を横並び配置 */}
+                {/* 下部エリア：ファイル一覧とファイル添付 */}
                 <div className={styles.row3Cols}>
 
-                    {/* 6. 案件ファイル一覧（左側・2カラム分の幅） */}
+                    {/* 案件ファイル一覧 */}
                     <div className={`${styles.section} ${styles.colSpan2}`} style={{ marginBottom: 0 }}>
                         <div className={styles.consoleHeader} style={{ marginBottom: '12px' }}>
                             <span className={styles.consoleTitle}>
@@ -368,8 +387,7 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
                         </div>
                     </div>
 
-
-                    {/* 5. ファイル添付 セクション（右側・1カラム分の幅） */}
+                    {/* ファイル添付 セクション */}
                     <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column' }}>
                         <div className={styles.section} style={{ marginBottom: 0, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
@@ -450,6 +468,15 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
                     ))}
                 </div>
             </div>
+
+            {/* プロジェクト登録・編集モーダル */}
+            <ProjectFormModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmitSuccess={() => {
+                    void fetchProjectData();
+                }}
+            />
         </div>
     );
 }

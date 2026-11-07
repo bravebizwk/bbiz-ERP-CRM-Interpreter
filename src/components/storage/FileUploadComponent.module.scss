@@ -52,7 +52,7 @@ $accent-btn-hover: #1e4b8a;
             padding: 4px 10px;
             border-radius: 12px;
             color: $accent-blue;
-            margin-bottom: rem;
+            margin-bottom: 0.4rem;
         }
     }
 
@@ -119,7 +119,7 @@ $accent-btn-hover: #1e4b8a;
 
         .cardLabel {
             display: block;
-            font-size: 0.75rem;
+            font-size: 0.84rem;
             color: $text-muted;
             margin-bottom: 4px;
         }
@@ -129,6 +129,8 @@ $accent-btn-hover: #1e4b8a;
             color: $text-light;
             font-weight: 500;
             word-break: break-all;
+            margin-left: 1.6rem;
+            margin-bottom: 0.64rem;
         }
     }
 
@@ -431,4 +433,30 @@ $accent-btn-hover: #1e4b8a;
         grid-column: span 2; // PCサイズでは2カラム分の幅にする
     }
 }
+
+
+
+
+
+
+
+.header {
+    display: flex;
+    justify-content: space-between; // 👈 左右の端に大きく分ける
+    align-items: center;
+    // その他の既存のスタイル（背景色やパディングなど）はそのまま保持してください
+}
+
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 12px; // 👈 パートナー名とバッジの間隔（お好みで調整してください）
+}
+
+.titlepartner {
+    // 必要に応じてパートナー名の文字色やフォントサイズを指定
+    font-weight: 400;
+    font-size: 0.88rem;
+    text-align: right;
+    }
 
