@@ -1,7 +1,18 @@
+'use client';
 import React, { useState, useEffect } from 'react';
 
+// 商品データの型定義
+interface Product {
+    id: string | number;
+    name: string;
+    category: string;
+    price: number;
+    stock: number;
+    status: string;
+}
+
 export default function Products() {
-    const [products, setProducts] = useState([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -17,8 +28,8 @@ export default function Products() {
             });
     }, []);
 
-    // ステータスに応じたバッジの配色
-    const getStatusStyle = (status) => {
+    // ステータスに応じたバッジの配色（引数に string 型を指定）
+    const getStatusStyle = (status: string) => {
         switch (status) {
             case '販売中':
                 return { backgroundColor: '#e6f4ea', color: '#4d86b9' };

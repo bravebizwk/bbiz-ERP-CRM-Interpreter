@@ -9,7 +9,8 @@ export async function GET() {
         category_type,
         category_code,
         category_name,
-        category_short
+        category_short,
+        parent_code
       FROM category_master
       ORDER BY
         category_type,

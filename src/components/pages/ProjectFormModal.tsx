@@ -7,25 +7,21 @@ interface ModalProps {
     onSubmitSuccess?: () => void;
 }
 
-
-
 export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: ModalProps) {
     const [activeTab, setActiveTab] = useState<'basic' | 'contents' | 'date' | 'text'>('basic');
     const [submitting, setSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // 各種サジェスト用の候補リスト
+    // 各種サジェスト用および自動読み込み用のデータ保持
+    const [allProjects, setAllProjects] = useState<any[]>([]);
     const [projectNoOptions, setProjectNoOptions] = useState<string[]>([]);
     const [customerOptions, setCustomerOptions] = useState<string[]>([]);
     const [partnerOptions, setPartnerOptions] = useState<string[]>([]);
     const [interpreterOptions, setInterpreterOptions] = useState<string[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
 
-
     const [selectedLarge, setSelectedLarge] = useState("");
     const [selectedMedium, setSelectedMedium] = useState("");
-    
-
 
     const [formData, setFormData] = useState({
         proj_no: '',
@@ -55,7 +51,7 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
         proj_count: 0,
     });
 
-    // モーダルが開いた時に各種候補データを取得
+    // モーダルが開いた時に各種候補データおよび全プロジェクト詳細を取得
     useEffect(() => {
         if (!isOpen) return;
 
@@ -77,15 +73,22 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
 
                 if (projRes.ok) {
                     const projects = await projRes.json();
+                    setAllProjects(projects); // ← 既存データ全件を保持
                     setProjectNoOptions(projects.map((p: any) => p.proj_no));
                 }
-                if (custRes.ok) setCustomerOptions(await custRes.json());
+
+                if (custRes.ok) {
+                    const customers = await custRes.json();
+                    setCustomerOptions(customers.map((c: any) => typeof c === 'object' && c !== null ? c.proj_customer : c));
+                }
+
                 if (partRes.ok) setPartnerOptions(await partRes.json());
                 if (intpRes.ok) setInterpreterOptions(await intpRes.json());
                 if (categoryRes.ok) {
                     setCategories(await categoryRes.json());
                 }
-            } catch (err) {
+
+            } catch (err: unknown) {
                 console.error('候補データの取得に失敗しました:', err);
             }
         };
@@ -95,6 +98,7 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
 
     if (!isOpen) return null;
 
+    // カテゴリのフィルタリング定義
     const largeCategories = categories.filter(
         x => x.category_type === 'LARGE'
     );
@@ -102,19 +106,20 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
     const mediumCategories = categories.filter(
         x =>
             x.category_type === 'MEDIUM' &&
-            x.parent_code === selectedLarge
+            (!selectedLarge || x.parent_code === selectedLarge)
     );
 
     const smallCategories = categories.filter(
         x =>
             x.category_type === 'SMALL' &&
-            x.parent_code === selectedMedium
+            (!selectedMedium || x.parent_code === selectedMedium)
     );
 
     const languageCategories = categories.filter(
         x => x.category_type === 'LANGUAGE'
     );
 
+    // 一般の入力ハンドラー
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
@@ -127,11 +132,48 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                 : value,
         }));
     };
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: name.includes('count') ? Number(value) : value,
-        }));
+
+    // 案件番号（proj_no）専用のハンドラー（入力時に既存データを自動読み込み）
+    const handleProjNoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputNo = e.target.value;
+        setFormData(prev => ({ ...prev, proj_no: inputNo }));
+
+        // 既存のプロジェクトデータから一致するものを検索
+        const foundProject = allProjects.find(p => p.proj_no === inputNo);
+
+        if (foundProject) {
+            // 一致するデータが見つかった場合、フォームに自動反映
+            setFormData({
+                proj_no: foundProject.proj_no || '',
+                proj_customer: foundProject.proj_customer || '',
+                proj_partner_name: foundProject.proj_partner_name || '',
+                intp_name_en: foundProject.intp_name_en || '',
+                large_category: foundProject.large_category || '',
+                medium_category: foundProject.medium_category || '',
+                small_category: foundProject.small_category || '',
+                language_category: foundProject.language_category || '',
+                proj_ct_1: foundProject.proj_ct_1 || '',
+                proj_ct_2: foundProject.proj_ct_2 || '',
+                proj_ct_3: foundProject.proj_ct_3 || '',
+                proj_ct_4: foundProject.proj_ct_4 || '',
+                proj_issue: foundProject.proj_issue || '',
+                proj_request: foundProject.proj_request || '',
+                proj_possible: foundProject.proj_possible || '',
+                proj_date_1: foundProject.proj_date_1 || '',
+                proj_date_2: foundProject.proj_date_2 || '',
+                proj_format: foundProject.proj_format || '',
+                proj_qty_format: foundProject.proj_qty_format || '',
+                proj_char_count: foundProject.proj_char_count || 0,
+                proj_count: foundProject.proj_count || 0,
+            });
+
+            // 大カテゴリのコード逆引き（中・小の連動のため）
+            const matchedLarge = largeCategories.find(item => item.category_name === foundProject.large_category);
+            if (matchedLarge) setSelectedLarge(matchedLarge.category_code);
+
+            const matchedMedium = mediumCategories.find(item => item.category_name === foundProject.medium_category);
+            if (matchedMedium) setSelectedMedium(matchedMedium.category_code);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -141,67 +183,45 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
 
         try {
             const res = await fetch('/api/projects', {
-                method: 'POST',
+                method: 'POST', // バックエンド側で INSERT OR REPLACE を使用しているため、既存データは自動でUpdateされます
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
 
             if (!res.ok) {
-                throw new Error(`プロジェクトの登録に失敗しました (${res.status})`);
+                throw new Error(`プロジェクト情報の保存に失敗しました (${res.status})`);
             }
 
-            alert('プロジェクト情報の登録が完了しました');
+            alert('プロジェクト情報の保存が完了しました');
             if (onSubmitSuccess) onSubmitSuccess();
             onClose();
-        } catch (err) {
+        } catch (err: unknown) {
             console.error('Submit Error:', err);
-            setErrorMessage(err instanceof Error ? err.message : '予期せぬエラーが発生しました');
+            const errMsg = err instanceof Error ? err.message : '予期せぬエラーが発生しました';
+            setErrorMessage(errMsg);
         } finally {
             setSubmitting(false);
         }
     };
 
-    const largeCategories =
-        categories.filter(
-            x => x.category_type === 'LARGE'
-        );
-
-    const mediumCategories =
-        categories.filter(
-            x => x.category_type === 'MEDIUM'
-        );
-
-    const smallCategories =
-        categories.filter(
-            x => x.category_type === 'SMALL'
-        );
-
-    const languageCategories =
-        categories.filter(
-            x => x.category_type === 'LANGUAGE'
-        );
-
-
     return (
         <div style={styles.overlay} onClick={onClose}>
             <div style={styles.container} onClick={(e) => e.stopPropagation()}>
                 <div style={styles.header}>
-                    <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#f8fafc' }}>プロジェクト新規登録</h2>
+                    <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#f8fafc' }}>プロジェクト登録・編集</h2>
                     <button style={styles.closeBtn} onClick={onClose}>&times;</button>
                 </div>
 
                 <div style={styles.tabs}>
                     <button type="button" style={activeTab === 'basic' ? styles.activeTabBtn : styles.tabBtn} onClick={() => setActiveTab('basic')}>基本・カテゴリ</button>
-                    <button type="button" style={activeTab === 'contents' ? styles.activeTabBtn : styles.tabBtn} onClick={() => setActiveTab('contents')}>コンテンツ (CT)</button>
-                    <button type="button" style={activeTab === 'date' ? styles.activeTabBtn : styles.tabBtn} onClick={() => setActiveTab('date')}>日付・スケジュール</button>
                     <button type="button" style={activeTab === 'text' ? styles.activeTabBtn : styles.tabBtn} onClick={() => setActiveTab('text')}>フォーマット・数値</button>
+                    <button type="button" style={activeTab === 'date' ? styles.activeTabBtn : styles.tabBtn} onClick={() => setActiveTab('date')}>日付・スケジュール</button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.body}>
                         {errorMessage && <p style={{ color: '#ef4444', marginBottom: '16px' }}>{errorMessage}</p>}
 
-                        {/* 基本情報・カテゴリ・顧客・パートナー・通訳者 */}
                         {activeTab === 'basic' && (
                             <div>
                                 <div style={styles.formGroup}>
@@ -210,7 +230,7 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                                         type="text"
                                         name="proj_no"
                                         value={formData.proj_no}
-                                        onChange={handleChange}
+                                        onChange={handleProjNoChange} // ← 案件番号入力で既存データを自動読み込み
                                         style={styles.input}
                                         required
                                         placeholder=" 例: P-001"
@@ -282,117 +302,110 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                                     </datalist>
                                 </div>
 
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>大カテゴリ</label>
-                                    <select name="large_category" value={formData.large_category} onChange={handleChange} style={styles.input}>
+                                {/* 大カテゴリ・中カテゴリ・小カテゴリを3つ横並び */}
+                                <div style={styles.rowGroup}>
+                                    <div style={styles.columnItem}>
+                                        <label style={styles.label}>大カテゴリ</label>
                                         <select
                                             name="large_category"
                                             value={formData.large_category}
-                                            onChange={handleChange}
+                                            onChange={(e) => {
+                                                const selectedName = e.target.value;
+                                                const foundLarge = largeCategories.find(item => item.category_name === selectedName);
+                                                setSelectedLarge(foundLarge ? foundLarge.category_code : '');
+
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    large_category: selectedName,
+                                                    medium_category: '',
+                                                    small_category: ''
+                                                }));
+                                                setSelectedMedium('');
+                                            }}
                                             style={styles.input}
                                         >
-                                            <option value="">選択してください</option>
-
+                                            <option value="">選択</option>
                                             {largeCategories.map((item) => (
-                                                <option
-                                                    key={item.category_code}
-                                                    value={item.category_name}
-                                                >
-                                                    {item.category_name}
-                                                </option>
-                                            ))}
-                                        </select>   
-                                    </select>
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>中カテゴリ</label>
-                                    <select
-                                        name="medium_category"
-                                        value={formData.medium_category}
-                                        onChange={handleChange}
-                                        style={styles.input}
-                                    >
-                                        <option value="">選択してください</option>
-
-                                        {mediumCategories.map((item) => (
-                                            <option
-                                                key={item.category_code}
-                                                value={item.category_name}
-                                            >
-                                                {item.category_name}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>小カテゴリ</label>
-                                    <select
-                                        name="small_category"
-                                        value={formData.small_category}
-                                        onChange={handleChange}
-                                        style={styles.input}
-                                    >
-                                        <option value="">選択してください</option>
-
-                                        {smallCategories.map((item) => (
-                                            <option
-                                                key={item.category_code}
-                                                value={item.category_name}
-                                            >
-                                                {item.category_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>言語カテゴリ</label>
-                                    <select name="language_category" value={formData.language_category} onChange={handleChange} style={styles.input}>
-                                        <select
-                                            name="language_category"
-                                            value={formData.language_category}
-                                            onChange={handleChange}
-                                            style={styles.input}
-                                        >
-                                            <option value="">選択してください</option>
-
-                                            {languageCategories.map((item) => (
-                                                <option
-                                                    key={item.category_code}
-                                                    value={item.category_name}
-                                                >
+                                                <option key={item.category_code} value={item.category_name}>
                                                     {item.category_name}
                                                 </option>
                                             ))}
                                         </select>
+                                    </div>
+
+                                    <div style={styles.columnItem}>
+                                        <label style={styles.label}>中カテゴリ</label>
+                                        <select
+                                            name="medium_category"
+                                            value={formData.medium_category}
+                                            onChange={(e) => {
+                                                const selectedName = e.target.value;
+                                                const foundMedium = mediumCategories.find(item => item.category_name === selectedName);
+                                                setSelectedMedium(foundMedium ? foundMedium.category_code : '');
+
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    medium_category: selectedName,
+                                                    small_category: ''
+                                                }));
+                                            }}
+                                            style={styles.input}
+                                        >
+                                            <option value="">選択</option>
+                                            {mediumCategories.map((item) => (
+                                                <option key={item.category_code} value={item.category_name}>
+                                                    {item.category_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div style={styles.columnItem}>
+                                        <label style={styles.label}>小カテゴリ</label>
+                                        <select
+                                            name="small_category"
+                                            value={formData.small_category}
+                                            onChange={handleChange}
+                                            style={styles.input}
+                                        >
+                                            <option value="">選択</option>
+                                            {smallCategories.map((item) => (
+                                                <option key={item.category_code} value={item.category_name}>
+                                                    {item.category_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div style={styles.formGroup}>
+                                    <label style={styles.label}>言語カテゴリ</label>
+                                    <select
+                                        name="language_category"
+                                        value={formData.language_category}
+                                        onChange={handleChange}
+                                        style={styles.input}
+                                    >
+                                        <option value="">選択してください</option>
+                                        {languageCategories.map((item) => (
+                                            <option key={item.category_code} value={item.category_name}>
+                                                {item.category_name}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* コンテンツ (CT) */}
-                        {activeTab === 'contents' && (
-                            <div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>CT 1</label>
-                                    <input type="text" name="proj_ct_1" value={formData.proj_ct_1} onChange={handleChange} style={styles.input} />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>CT 2</label>
-                                    <input type="text" name="proj_ct_2" value={formData.proj_ct_2} onChange={handleChange} style={styles.input} />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>CT 3</label>
-                                    <input type="text" name="proj_ct_3" value={formData.proj_ct_3} onChange={handleChange} style={styles.input} />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>CT 4</label>
-                                    <input type="text" name="proj_ct_4" value={formData.proj_ct_4} onChange={handleChange} style={styles.input} />
+                                <div style={styles.RightBottun}>
+                                    <button
+                                        type="button"
+                                        style={styles.nextBtn}
+                                        onClick={() => setActiveTab('text')}
+                                    >
+                                        文字数へ &gt;
+                                    </button>
                                 </div>
                             </div>
                         )}
 
-                        {/* 日付・スケジュール（クリックで自動的にカレンダーが開く仕様） */}
                         {activeTab === 'date' && (
                             <div>
                                 {[
@@ -420,27 +433,66 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                                         />
                                     </div>
                                 ))}
+                                <div style={styles.RightBottun}>
+                                    <button
+                                        type="button"
+                                        style={styles.nextBtn}
+                                        onClick={() => setActiveTab('basic')}
+                                    >
+                                        カテゴリへ &gt;
+                                    </button>
+                                </div>
                             </div>
                         )}
 
-                        {/* テキスト・フォーマット・数値 */}
                         {activeTab === 'text' && (
                             <div>
+                                <div style={styles.rowGroup}>
+                                    <div style={styles.columnItem}>
+                                        <label style={styles.label}>フォーマット (proj_format)</label>
+                                        <input type="text" name="proj_format" value={formData.proj_format} onChange={handleChange} style={styles.input} />
+                                    </div>
+                                    <div style={styles.columnItem}>
+                                        <label style={styles.label}>数量形式 (proj_qty_format)</label>
+                                        <input type="text" name="proj_qty_format" value={formData.proj_qty_format} onChange={handleChange} style={styles.input} />
+                                    </div>
+                                </div>
+
+                                <div style={styles.rowGroup}>
+                                    <div style={styles.columnItem}>
+                                        <label style={styles.label}>文字数 (proj_char_count)</label>
+                                        <input type="number" name="proj_char_count" value={formData.proj_char_count} onChange={handleChange} style={styles.input} />
+                                    </div>
+                                    <div style={styles.columnItem}>
+                                        <label style={styles.label}>カウント (proj_count)</label>
+                                        <input type="number" name="proj_count" value={formData.proj_count} onChange={handleChange} style={styles.input} />
+                                    </div>
+                                </div>
+
                                 <div style={styles.formGroup}>
-                                    <label style={styles.label}>フォーマット (proj_format)</label>
-                                    <input type="text" name="proj_format" value={formData.proj_format} onChange={handleChange} style={styles.input} />
+                                    <label style={styles.label}>CT 1</label>
+                                    <input type="text" name="proj_ct_1" value={formData.proj_ct_1} onChange={handleChange} style={styles.input} />
                                 </div>
                                 <div style={styles.formGroup}>
-                                    <label style={styles.label}>数量形式 (proj_qty_format)</label>
-                                    <input type="text" name="proj_qty_format" value={formData.proj_qty_format} onChange={handleChange} style={styles.input} />
+                                    <label style={styles.label}>CT 2</label>
+                                    <input type="text" name="proj_ct_2" value={formData.proj_ct_2} onChange={handleChange} style={styles.input} />
                                 </div>
                                 <div style={styles.formGroup}>
-                                    <label style={styles.label}>文字数 (proj_char_count)</label>
-                                    <input type="number" name="proj_char_count" value={formData.proj_char_count} onChange={handleChange} style={styles.input} />
+                                    <label style={styles.label}>CT 3</label>
+                                    <input type="text" name="proj_ct_3" value={formData.proj_ct_3} onChange={handleChange} style={styles.input} />
                                 </div>
                                 <div style={styles.formGroup}>
-                                    <label style={styles.label}>カウント (proj_count)</label>
-                                    <input type="number" name="proj_count" value={formData.proj_count} onChange={handleChange} style={styles.input} />
+                                    <label style={styles.label}>CT 4</label>
+                                    <input type="text" name="proj_ct_4" value={formData.proj_ct_4} onChange={handleChange} style={styles.input} />
+                                </div>
+                                <div style={styles.RightBottun}>
+                                    <button
+                                        type="button"
+                                        style={styles.nextBtn}
+                                        onClick={() => setActiveTab('date')}
+                                    >
+                                        スケジュールへ &gt;
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -451,7 +503,7 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                             キャンセル
                         </button>
                         <button type="submit" style={styles.saveBtn} disabled={submitting}>
-                            {submitting ? '保存中...' : '保存する'}
+                            {submitting ? '保存中...' : '保存 / 更新する'}
                         </button>
                     </div>
                 </form>
@@ -478,9 +530,12 @@ const styles: { [key: string]: React.CSSProperties } = {
         color: '#f8fafc',
         width: '90%',
         maxWidth: '650px',
+        maxHeight: '85vh',
         borderRadius: '8px',
         overflow: 'hidden',
         boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        flexDirection: 'column',
     },
     header: {
         padding: '16px 24px',
@@ -488,6 +543,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        flexShrink: 0,
     },
     closeBtn: {
         background: 'none',
@@ -500,6 +556,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         display: 'flex',
         backgroundColor: '#0f172a',
         borderBottom: '1px solid #334155',
+        flexShrink: 0,
     },
     tabBtn: {
         flex: 1,
@@ -522,13 +579,29 @@ const styles: { [key: string]: React.CSSProperties } = {
         borderBottom: '2px solid #38bdf8',
         fontWeight: 600,
     },
+    form: {
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        overflow: 'hidden',
+    },
     body: {
         padding: '20px 24px',
-        maxHeight: '60vh',
+        flex: 1,
         overflowY: 'auto',
     },
     formGroup: {
         marginBottom: '16px',
+    },
+    rowGroup: {
+        display: 'flex',
+        gap: '12px',
+        marginBottom: '16px',
+    },
+    columnItem: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
     },
     label: {
         display: 'block',
@@ -545,6 +618,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         color: '#f8fafc',
         outline: 'none',
         boxSizing: 'border-box',
+        fontSize: '1.12rem',
     },
     footer: {
         padding: '16px 24px',
@@ -552,6 +626,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         display: 'flex',
         justifyContent: 'flex-end',
         gap: '12px',
+        flexShrink: 0,
     },
     cancelBtn: {
         padding: '8px 16px',
@@ -567,9 +642,24 @@ const styles: { [key: string]: React.CSSProperties } = {
         borderRadius: '6px',
         fontSize: '0.875rem',
         cursor: 'pointer',
-        backgroundColor: '#21559d',
+        backgroundColor: '#227aa2',
         color: '#ffffff',
         border: 'none',
         fontWeight: 600,
+    },
+    nextBtn: {
+        padding: '8px 16px',
+        borderRadius: '6px',
+        fontSize: '0.875rem',
+        cursor: 'pointer',
+        backgroundColor: '#2279a2ba',
+        color: '#ffffff',
+        border: 'none',
+        fontWeight: 600,
+    },
+    RightBottun: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        flex: 1,
     },
 };

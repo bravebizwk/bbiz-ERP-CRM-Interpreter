@@ -3,24 +3,24 @@ import db from '@/lib/db';
 
 export async function GET() {
   try {
-    // 確実に存在する基本テーブルのみで結合し、存在しない可能性のあるテーブルは安全に処理します
+    // 実際のテーブル構造と各コード体系に基づいた結合クエリ
     const stmt = db.prepare(`
       SELECT 
-        c.proj_no,
+        c.proj_customer_code AS proj_no,
         c.proj_customer,
-        ct.proj_ct_1,
-        ct.proj_ct_2,
-        ct.proj_ct_3,
-        ct.proj_ct_4,
-        d.proj_issue,
-        d.proj_request,
-        d.proj_possible,
-        d.proj_date_1,
-        d.proj_date_2,
-        t.proj_format,
-        t.proj_qty_format,
-        t.proj_char_count,
-        t.proj_count,
+        COALESCE(ct.proj_ct_1, '') AS proj_ct_1,
+        COALESCE(ct.proj_ct_2, '') AS proj_ct_2,
+        COALESCE(ct.proj_ct_3, '') AS proj_ct_3,
+        COALESCE(ct.proj_ct_4, ' ') AS proj_ct_4,
+        COALESCE(d.proj_issue, '') AS proj_issue,
+        COALESCE(d.proj_request, '') AS proj_request,
+        COALESCE(d.proj_possible, '') AS proj_possible,
+        COALESCE(d.proj_date_1, '') AS proj_date_1,
+        COALESCE(d.proj_date_2, '') AS proj_date_2,
+        COALESCE(t.proj_format, '') AS proj_format,
+        COALESCE(t.proj_qty_format, '') AS proj_qty_format,
+        COALESCE(t.proj_char_count, 0) AS proj_char_count,
+        COALESCE(t.proj_count, 0) AS proj_count,
         COALESCE(pc.large_category, '') AS large_category,
         COALESCE(pc.medium_category, '') AS medium_category,
         COALESCE(pc.small_category, '') AS small_category,
@@ -28,19 +28,21 @@ export async function GET() {
         COALESCE(pp.proj_partner_name, '') AS proj_partner_name,
         '' AS intp_name_en
       FROM project_customer c
-      LEFT JOIN project_contents ct ON c.proj_no = ct.proj_no
-      LEFT JOIN project_date d ON c.proj_no = d.proj_no
-      LEFT JOIN project_text t ON c.proj_no = t.proj_no
-      LEFT JOIN project_categories pc ON c.proj_no = pc.proj_no
-      LEFT JOIN project_partner pp ON c.proj_no = pp.proj_no
+      LEFT JOIN project_contents ct ON c.proj_customer_code = ct.proj_ct_code
+      LEFT JOIN project_date d ON c.proj_customer_code = d.proj_date_code
+      LEFT JOIN project_text t ON c.proj_customer_code = t.proj_text_code
+      LEFT JOIN project_categories pc ON c.proj_customer_code = pc.proj_no
+      LEFT JOIN project_partner pp ON pp.proj_partner_no = c.proj_customer_code
     `);
 
     const rows = stmt.all();
     return NextResponse.json(rows);
 
-  } catch (error: any) {
-    console.error('Projects GET API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errStack = error instanceof Error ? error.stack : '';
+    console.error('Projects GET API Critical Error:', errMessage, errStack);
+    return NextResponse.json({ error: errMessage }, { status: 500 });
   }
 }
 
@@ -75,26 +77,138 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '案件番号と顧客名は必須です。' }, { status: 400 });
     }
 
-    const transaction = db.transaction(() => {
-      db.prepare(`INSERT OR REPLACE INTO project_customer (proj_no, proj_customer) VALUES (?, ?)`).run(proj_no, proj_customer);
-      db.prepare(`INSERT OR REPLACE INTO project_contents (proj_no, proj_ct_1, proj_ct_2, proj_ct_3, proj_ct_4) VALUES (?, ?, ?, ?, ?)`).run(proj_no, proj_ct_1, proj_ct_2, proj_ct_3, proj_ct_4);
-      db.prepare(`INSERT OR REPLACE INTO project_date (proj_no, proj_issue, proj_request, proj_possible, proj_date_1, proj_date_2) VALUES (?, ?, ?, ?, ?, ?)`).run(proj_no, proj_issue, proj_request, proj_possible, proj_date_1, proj_date_2);
-      db.prepare(`INSERT OR REPLACE INTO project_text (proj_no, proj_format, proj_qty_format, proj_char_count, proj_count) VALUES (?, ?, ?, ?, ?)`).run(proj_no, proj_format, proj_qty_format, proj_char_count, proj_count);
-      db.prepare(`INSERT OR REPLACE INTO project_categories (proj_no, large_category, medium_category, small_category, language_category) VALUES (?, ?, ?, ?, ?)`).run(proj_no, large_category || '', medium_category || '', small_category || '', language_category || '');
+    // トランザクション開始前に、既存データが存在するかどうかを確認（差分検出用）
+    const existingStmt = db.prepare(`
+      SELECT 
+        c.proj_customer,
+        COALESCE(ct.proj_ct_1, '') AS proj_ct_1,
+        COALESCE(ct.proj_ct_2, '') AS proj_ct_2,
+        COALESCE(ct.proj_ct_3, '') AS proj_ct_3,
+        COALESCE(ct.proj_ct_4, '') AS proj_ct_4,
+        COALESCE(d.proj_issue, '') AS proj_issue,
+        COALESCE(d.proj_request, '') AS proj_request,
+        COALESCE(d.proj_possible, '') AS proj_possible,
+        COALESCE(d.proj_date_1, '') AS proj_date_1,
+        COALESCE(d.proj_date_2, '') AS proj_date_2,
+        COALESCE(t.proj_format, '') AS proj_format,
+        COALESCE(t.proj_qty_format, '') AS proj_qty_format,
+        COALESCE(t.proj_char_count, 0) AS proj_char_count,
+        COALESCE(t.proj_count, 0) AS proj_count,
+        COALESCE(pc.large_category, '') AS large_category,
+        COALESCE(pc.medium_category, '') AS medium_category,
+        COALESCE(pc.small_category, '') AS small_category,
+        COALESCE(pc.language_category, '') AS language_category,
+        COALESCE(pp.proj_partner_name, '') AS proj_partner_name,
+        '' AS intp_name_en
+      FROM project_customer c
+      LEFT JOIN project_contents ct ON c.proj_customer_code = ct.proj_ct_code
+      LEFT JOIN project_date d ON c.proj_customer_code = d.proj_date_code
+      LEFT JOIN project_text t ON c.proj_customer_code = t.proj_text_code
+      LEFT JOIN project_categories pc ON c.proj_customer_code = pc.proj_no
+      LEFT JOIN project_partner pp ON pp.proj_partner_no = c.proj_customer_code
+      WHERE c.proj_customer_code = ?
+    `);
 
+    const oldData: any = existingStmt.get(proj_no);
+    const actionType = oldData ? 'UPDATE' : 'INSERT';
+
+    const transaction = db.transaction(() => {
+      // 1. 顧客情報 (project_customer)
+      db.prepare(`
+        INSERT OR REPLACE INTO project_customer (proj_customer_code, proj_customer) 
+        VALUES (?, ?)
+      `).run(proj_no, proj_customer);
+
+      // 2. コンテンツ情報 (project_contents)
+      db.prepare(`
+        INSERT OR REPLACE INTO project_contents (proj_ct_code, proj_ct_1, proj_ct_2, proj_ct_3, proj_ct_4) 
+        VALUES (?, ?, ?, ?, ?)
+      `).run(proj_no, proj_ct_1 || '', proj_ct_2 || '', proj_ct_3 || '', proj_ct_4 || '');
+
+      // 3. 日付情報 (project_date)
+      db.prepare(`
+        INSERT OR REPLACE INTO project_date (proj_date_code, proj_issue, proj_request, proj_possible, proj_date_1, proj_date_2) 
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(proj_no, proj_issue || '', proj_request || '', proj_possible || '', proj_date_1 || '', proj_date_2 || '');
+
+      // 4. テキスト・数値情報 (project_text)
+      db.prepare(`
+        INSERT OR REPLACE INTO project_text (proj_text_code, proj_format, proj_qty_format, proj_char_count, proj_count) 
+        VALUES (?, ?, ?, ?, ?)
+      `).run(proj_no, proj_format || '', proj_qty_format || '', proj_char_count || 0, proj_count || 0);
+
+      // 5. カテゴリ情報 (project_categories)
+      db.prepare(`
+        INSERT OR REPLACE INTO project_categories (proj_no, large_category, medium_category, small_category, language_category) 
+        VALUES (?, ?, ?, ?, ?)
+      `).run(proj_no, large_category || '', medium_category || '', small_category || '', language_category || '');
+
+      // 6. パートナー情報 (project_partner)
       try {
-        db.prepare(`INSERT OR REPLACE INTO project_partner (proj_no, proj_partner_name) VALUES (?, ?)`).run(proj_no, proj_partner_name || '');
-      } catch (e) {
-        console.warn('project_partner save skipped:', e);
+        db.prepare(`
+          INSERT OR REPLACE INTO project_partner (proj_partner_no, proj_partner_name) 
+          VALUES (?, ?)
+        `).run(proj_no, proj_partner_name || '');
+      } catch (e: unknown) {
+        const subErrMsg = e instanceof Error ? e.message : 'Unknown error';
+        console.warn('project_partner save skipped', subErrMsg);
+      }
+
+      // 7. 変更履歴（project_audit_logs）への差分記録
+      const auditStmt = db.prepare(`
+        INSERT INTO project_audit_logs (proj_no, action_type, column_name, old_value, new_value)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+
+      const newData: { [key: string]: any } = {
+        proj_customer,
+        large_category: large_category || '',
+        medium_category: medium_category || '',
+        small_category: small_category || '',
+        language_category: language_category || '',
+        proj_partner_name: proj_partner_name || '',
+        intp_name_en: intp_name_en || '',
+        proj_ct_1: proj_ct_1 || '',
+        proj_ct_2: proj_ct_2 || '',
+        proj_ct_3: proj_ct_3 || '',
+        proj_ct_4: proj_ct_4 || '',
+        proj_issue: proj_issue || '',
+        proj_request: proj_request || '',
+        proj_possible: proj_possible || '',
+        proj_date_1: proj_date_1 || '',
+        proj_date_2: proj_date_2 || '',
+        proj_format: proj_format || '',
+        proj_qty_format: proj_qty_format || '',
+        proj_char_count: proj_char_count || 0,
+        proj_count: proj_count || 0,
+      };
+
+      if (!oldData) {
+        // 新規作成（INSERT）の場合、主要な項目をログとして残す
+        for (const [col, newVal] of Object.entries(newData)) {
+          auditStmt.run(proj_no, 'INSERT', col, '', String(newVal));
+        }
+      } else {
+        // 更新（UPDATE）の場合、変更があった項目のみ差分を抽出して記録
+        for (const [col, newVal] of Object.entries(newData)) {
+          const oldVal = oldData[col] !== undefined && oldData[col] !== null ? String(oldData[col]) : '';
+          const newStrVal = String(newVal);
+
+          if (oldVal !== newStrVal) {
+            auditStmt.run(proj_no, 'UPDATE', col, oldVal, newStrVal);
+          }
+        }
       }
     });
 
     transaction();
 
-    return NextResponse.json({ success: true, message: 'プロジェクト情報を保存しました。' });
+    return NextResponse.json({ success: true, message: 'プロジェクト情報を保存し、変更履歴を記録しました。' });
 
-  } catch (error: any) {
-    console.error('Projects POST API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errStack = error instanceof Error ? error.stack : '';
+    console.error('Projects POST API Critical Error:', errMessage, errStack);
+    return NextResponse.json({ error: errMessage }, { status: 500 });
   }
 }

@@ -7,11 +7,13 @@ export async function GET() {
         const dbPath = path.join(process.cwd(), 'dashboard.sqlite');
         const db = new Database(dbPath);
 
-        // customers テーブルから全件取得
-        const customers = db.prepare('SELECT * FROM customers').all();
+        // 'customers' ではなく正しいテーブル名 'project_customer' から取得する[cite: 13]
+        const customers = db.prepare('SELECT proj_customer FROM project_customer').all();
         db.close();
 
-        return NextResponse.json(customers);
+        // 重複を除外した顧客名の文字列配列として返す
+        const customerNames = Array.from(new Set(customers.map(c => c.proj_customer).filter(Boolean)));
+        return NextResponse.json(customerNames);
     } catch (error) {
         console.error('Database Error:', error);
         return NextResponse.json({ error: 'Failed to fetch customers' }, { status: 500 });
