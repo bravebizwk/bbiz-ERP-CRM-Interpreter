@@ -179,6 +179,8 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess, ini
         }));
     };
 
+
+
     // 案件番号（proj_no）専用のハンドラー（入力時に既存データを自動読み込み）
     const handleProjNoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const inputNo = e.target.value;
