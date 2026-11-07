@@ -285,11 +285,18 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
 
                             <span className={styles.cardLabel} style={{ marginTop: '8px' }}>内容</span>
                             <div className={styles.cardValue}>{projectData.language_category || '-'}</div>
-                            <div className={styles.cardValue}>{projectData.large_category || '-'}</div>
-                            <div className={styles.cardValue}>{projectData.medium_category || '-'}</div>
-                            <div className={styles.cardValue}>{projectData.small_category || '-'}</div>
-                            <div className={styles.cardValue}>{projectData.proj_char_count || '-'}</div>
+
+                            {/* 💡 大・中・小カテゴリを横並びにするラッパー */}
+                            <div className={styles.categoryTagsRow}>
+                                <div className={styles.cardValue}>{projectData.large_category || '-'}</div>
+                                <div className={styles.cardValue}>{projectData.medium_category || '-'}</div>
+                                <div className={styles.cardValue}>{projectData.small_category || '-'}</div>
+                            </div>
+
+                             <div className={styles.categoryTagsRow}>
+                            <div className={styles.cardValuecount}>{projectData.proj_char_count || '-'}文字</div>
                             <div className={styles.cardValue}>{projectData.proj_count || '-'}</div>
+                            </div>
                         </div>
 
                         <div className={styles.readOnlyCard}>
@@ -470,13 +477,16 @@ export default function FileUploadComponent({ projNo, uploadUser = 'system', onU
             </div>
 
             {/* プロジェクト登録・編集モーダル */}
+            {/* プロジェクト登録・編集モーダル */}
             <ProjectFormModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+                initialProjNo={projNo} // 👈 案件番号をモーダルに渡す！
                 onSubmitSuccess={() => {
                     void fetchProjectData();
                 }}
             />
+
         </div>
     );
 }

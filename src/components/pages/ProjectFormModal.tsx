@@ -5,9 +5,10 @@ interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmitSuccess?: () => void;
+    initialProjNo?: string; // 👈 追加：初期案件番号を受け取るプロパティ
 }
 
-export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: ModalProps) {
+export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess, initialProjNo }: ModalProps) {
     const [activeTab, setActiveTab] = useState<'basic' | 'contents' | 'date' | 'text'>('basic');
     const [submitting, setSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -51,11 +52,11 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
         proj_count: 0,
     });
 
-    // モーダルが開いた時に各種候補データおよび全プロジェクト詳細を取得
+    // モーダルが開いた時に各種候補データおよび全プロジェクト詳細を取得し、initialProjNo があれば反映
     useEffect(() => {
         if (!isOpen) return;
 
-        const fetchOptions = async () => {
+        const fetchOptionsAndLoadProject = async () => {
             try {
                 const [
                     projRes,
@@ -71,10 +72,11 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                     fetch('/api/category-master')
                 ]);
 
+                let fetchedProjects: any[] = [];
                 if (projRes.ok) {
-                    const projects = await projRes.json();
-                    setAllProjects(projects); // ← 既存データ全件を保持
-                    setProjectNoOptions(projects.map((p: any) => p.proj_no));
+                    fetchedProjects = await projRes.json();
+                    setAllProjects(fetchedProjects);
+                    setProjectNoOptions(fetchedProjects.map((p: any) => p.proj_no));
                 }
 
                 if (custRes.ok) {
@@ -85,7 +87,51 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                 if (partRes.ok) setPartnerOptions(await partRes.json());
                 if (intpRes.ok) setInterpreterOptions(await intpRes.json());
                 if (categoryRes.ok) {
-                    setCategories(await categoryRes.json());
+                    const catData = await categoryRes.json();
+                    setCategories(catData);
+
+                    // 💡 モーダルオープン時に initialProjNo が指定されている場合、データを自動ロードする
+                    if (initialProjNo && fetchedProjects.length > 0) {
+                        const foundProject = fetchedProjects.find((p: any) => p.proj_no === initialProjNo);
+                        if (foundProject) {
+                            setFormData({
+                                proj_no: foundProject.proj_no || '',
+                                proj_customer: foundProject.proj_customer || '',
+                                proj_partner_name: foundProject.proj_partner_name || '',
+                                intp_name_en: foundProject.intp_name_en || '',
+                                large_category: foundProject.large_category || '',
+                                medium_category: foundProject.medium_category || '',
+                                small_category: foundProject.small_category || '',
+                                language_category: foundProject.language_category || '',
+                                proj_ct_1: foundProject.proj_ct_1 || '',
+                                proj_ct_2: foundProject.proj_ct_2 || '',
+                                proj_ct_3: foundProject.proj_ct_3 || '',
+                                proj_ct_4: foundProject.proj_ct_4 || '',
+                                proj_issue: foundProject.proj_issue || '',
+                                proj_request: foundProject.proj_request || '',
+                                proj_possible: foundProject.proj_possible || '',
+                                proj_date_1: foundProject.proj_date_1 || '',
+                                proj_date_2: foundProject.proj_date_2 || '',
+                                proj_format: foundProject.proj_format || '',
+                                proj_qty_format: foundProject.proj_qty_format || '',
+                                proj_char_count: foundProject.proj_char_count || 0,
+                                proj_count: foundProject.proj_count || 0,
+                            });
+
+                            // カテゴリコードの逆引き
+                            const largeCats = catData.filter((x: any) => x.category_type === 'LARGE');
+                            const matchedLarge = largeCats.find((item: any) => item.category_name === foundProject.large_category);
+                            if (matchedLarge) {
+                                setSelectedLarge(matchedLarge.category_code);
+                                const mediumCats = catData.filter((x: any) => x.category_type === 'MEDIUM' && x.parent_code === matchedLarge.category_code);
+                                const matchedMedium = mediumCats.find((item: any) => item.category_name === foundProject.medium_category);
+                                if (matchedMedium) setSelectedMedium(matchedMedium.category_code);
+                            }
+                        } else {
+                            // 該当データがない場合は新規として案件番号だけセット
+                            setFormData(prev => ({ ...prev, proj_no: initialProjNo }));
+                        }
+                    }
                 }
 
             } catch (err: unknown) {
@@ -93,8 +139,8 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
             }
         };
 
-        void fetchOptions();
-    }, [isOpen]);
+        void fetchOptionsAndLoadProject();
+    }, [isOpen, initialProjNo]);
 
     if (!isOpen) return null;
 
@@ -142,7 +188,6 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
         const foundProject = allProjects.find(p => p.proj_no === inputNo);
 
         if (foundProject) {
-            // 一致するデータが見つかった場合、フォームに自動反映
             setFormData({
                 proj_no: foundProject.proj_no || '',
                 proj_customer: foundProject.proj_customer || '',
@@ -167,7 +212,6 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                 proj_count: foundProject.proj_count || 0,
             });
 
-            // 大カテゴリのコード逆引き（中・小の連動のため）
             const matchedLarge = largeCategories.find(item => item.category_name === foundProject.large_category);
             if (matchedLarge) setSelectedLarge(matchedLarge.category_code);
 
@@ -183,7 +227,7 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
 
         try {
             const res = await fetch('/api/projects', {
-                method: 'POST', // バックエンド側で INSERT OR REPLACE を使用しているため、既存データは自動でUpdateされます
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
@@ -230,7 +274,7 @@ export default function ProjectFormModal({ isOpen, onClose, onSubmitSuccess }: M
                                         type="text"
                                         name="proj_no"
                                         value={formData.proj_no}
-                                        onChange={handleProjNoChange} // ← 案件番号入力で既存データを自動読み込み
+                                        onChange={handleProjNoChange}
                                         style={styles.input}
                                         required
                                         placeholder=" 例: P-001"

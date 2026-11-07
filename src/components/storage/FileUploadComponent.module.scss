@@ -460,3 +460,20 @@ $accent-btn-hover: #1e4b8a;
     text-align: right;
     }
 
+
+
+
+
+        /* 💡 カテゴリをフレキシブルに左寄せ＆左詰めで横並びにするスタイル */
+        .categoryTagsRow {
+            display: flex;
+            flex-wrap: wrap; // 幅が狭くなった時に自動で折り返す設定
+            gap: 8px; // 項目同士の間隔（お好みで調整してください）
+            align-items: center;
+            margin: 4px 0;
+        }
+
+        .cardValuecount{
+            font-size: 1.2rem;
+            margin-left: 1.6rem;
+        }

@@ -33,6 +33,9 @@ export default function ProjectList() {
     const [customerFilter, setCustomerFilter] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // どのマスター項目のモーダルを開いているかを管理（nullなら閉じてる状態）
+    const [activeMasterModal, setActiveMasterModal] = useState<string | null>(null);
+
     // ヘッダーのスタイル（ここで文字色などを一括管理）
     const thStyle: React.CSSProperties = {
         padding: '12px 8px',
@@ -110,24 +113,20 @@ export default function ProjectList() {
                         <thead>
                             <tr style={{ borderBottom: '2px solid #75abdb' }}>
                                 <th style={thStyle}>案件番号</th>
-                                <th style={thStyle}>顧客名</th>
-                                <th style={thStyle}>Partner</th>
-                                <th style={thStyle}>翻訳</th>
-                                <th style={thStyle}>大カテゴリ</th>
-                                <th style={thStyle}>中カテゴリ</th>
-                                <th style={thStyle}>小カテゴリ</th>
-                                <th style={thStyle}>言語</th>
-                                <th style={thStyle}>CT1</th>
-                                <th style={thStyle}>CT2</th>
-                                <th style={thStyle}>CT3</th>
-                                <th style={thStyle}>CT4</th>
-                                <th style={thStyle}>発行日</th>
-                                <th style={thStyle}>リクエスト</th>
-                                <th style={thStyle}>可能日</th>
-                                <th style={thStyle}>フォーマット</th>
-                                <th style={thStyle}>数量形式</th>
+                                <th style={{ ...thStyle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveMasterModal('customer')}title="クリックして顧客マスタを管理">顧客名</th>
+                                <th style={{ ...thStyle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveMasterModal('project_partner')} title="クリックして顧客マスタを管理">Partner</th>
+                                <th style={{ ...thStyle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveMasterModal('project_partner')} title="クリックして顧客マスタを管理">翻訳</th>
+                                <th style={{ ...thStyle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveMasterModal('project_partner')} title="クリックして顧客マスタを管理">大カテゴリ</th>
+                                <th style={{ ...thStyle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveMasterModal('project_partner')} title="クリックして顧客マスタを管理">中カテゴリ</th>
+                                <th style={{ ...thStyle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveMasterModal('project_partner')} title="クリックして顧客マスタを管理">小カテゴリ</th>
                                 <th style={thStyle}>文字数</th>
-                                <th style={thStyle}>カウント</th>
+                                <th style={thStyle}>量</th>
+                                <th style={{ ...thStyle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveMasterModal('project_partner')} title="クリックして顧客マスタを管理">言語</th>
+                                <th style={thStyle}>発行日</th>
+                                <th style={thStyle}>要求日</th>
+                                <th style={thStyle}>可能日</th>
+                                <th style={{ ...thStyle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveMasterModal('project_partner')} title="クリックして顧客マスタを管理">形式</th>
+                                <th style={{ ...thStyle, cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveMasterModal('project_partner')} title="クリックして顧客マスタを管理">数量形式</th>                     
                             </tr>
                         </thead>
                             <tbody>
@@ -145,18 +144,16 @@ export default function ProjectList() {
                                         <td style={{ padding: '12px 8px' }}>{proj.large_category || '-'}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.medium_category || '-'}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.small_category || '-'}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_char_count}</td>
+                                        <td style={{ padding: '12px 8px' }}>{proj.proj_count}</td>          
                                         <td style={{ padding: '12px 8px' }}>{proj.language_category || '-'}</td>
-                                        <td style={{ padding: '12px 8px' }}>{proj.proj_ct_1}</td>
-                                        <td style={{ padding: '12px 8px' }}>{proj.proj_ct_2}</td>
-                                        <td style={{ padding: '12px 8px' }}>{proj.proj_ct_3}</td>
-                                        <td style={{ padding: '12px 8px' }}>{proj.proj_ct_4}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.proj_issue}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.proj_request}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.proj_possible}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.proj_format}</td>
                                         <td style={{ padding: '12px 8px' }}>{proj.proj_qty_format}</td>
-                                        <td style={{ padding: '12px 8px' }}>{proj.proj_char_count}</td>
-                                        <td style={{ padding: '12px 8px' }}>{proj.proj_count}</td></tr>
+
+                                    </tr>
                                 ))}
                             </tbody>
 
