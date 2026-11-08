@@ -1,5 +1,4 @@
-sqliteコマンド
-C:\sqlite\sqlite3.exe "C:\Users\Owner\Workplace-Git-BBiz\bbiz-ERP-CRM-Interpritor\dashboard.sqlite"
+データベースにはNeon (PostgreSQL) を使用します。接続には `DATABASE_URL` を設定してください。
  C:\Users\Owner\Workplace-Git-BBiz\bbiz-ERP-CRM-Interpritor\src\components
 
  

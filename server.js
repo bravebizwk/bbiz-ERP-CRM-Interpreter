@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import Database from 'better-sqlite3';
 import path from 'path';
 import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -14,85 +13,37 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-// 修正: ルートディレクトリの dashboard.sqlite を参照
-const dbPath = path.join(__dirname, 'dashboard.sqlite');
-const db = new Database(dbPath, { readonly: true });
+const disabledRoutes = [
+  ['/api/activities', ['get']],
+  ['/api/category-master', ['get']],
+  ['/api/categories', ['get', 'post']],
+  ['/api/chat', ['get', 'post']],
+  ['/api/customers', ['get']],
+  ['/api/interpreter', ['get', 'post']],
+  ['/api/interpreters-list', ['get']],
+  ['/api/items', ['get', 'post']],
+  ['/api/monthly-payments', ['get']],
+  ['/api/orders', ['get', 'post']],
+  ['/api/partners', ['get']],
+  ['/api/payments', ['get']],
+  ['/api/products', ['get']],
+  ['/api/projects', ['get', 'post']],
+  ['/api/sidebar', ['get']],
+  ['/api/sidebar-menu', ['get']],
+  ['/api/stats', ['get']],
+  ['/api/users', ['get']],
+];
 
-function sendRows(res, query, parameters = []) {
-  try {
-    res.json(query.all(...parameters));
-  } catch (error) {
-    console.error('API Error:', error.message);
-    res.status(500).json({ error: 'データを読み込めませんでした。' });
+for (const [route, methods] of disabledRoutes) {
+  for (const method of methods) {
+    app[method](route, (_req, res) => {
+      res.status(503).json({
+        message: `${route} Disabled`,
+        error: 'このAPIはNeonへの移行が完了するまで利用できません。',
+      });
+    });
   }
 }
-
-try {
-  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table';").all();
-  console.log('Available tables:', tables.map(t => t.name));
-} catch (err) {
-  console.error('Failed to read sqlite_master:', err.message);
-}
-
-app.get('/api/sidebar', (req, res) => {
-  sendRows(res, db.prepare('SELECT * FROM sidebar_menu ORDER BY id'));
-});
-
-app.get('/api/users', (req, res) => {
-  sendRows(res, db.prepare('SELECT * FROM users ORDER BY id'));
-});
-
-app.get('/api/products', (req, res) => {
-  sendRows(res, db.prepare('SELECT * FROM products ORDER BY id'));
-});
-
-app.get('/api/orders', (req, res) => {
-  sendRows(res, db.prepare('SELECT * FROM orders ORDER BY date DESC, id'));
-});
-
-app.get('/api/stats', (req, res) => {
-  sendRows(res, db.prepare('SELECT * FROM stats ORDER BY id'));
-});
-
-app.get('/api/revenue', (req, res) => {
-  const period = req.query.period ?? '1Y';
-  if (!['7D', '30D', '90D', '1Y'].includes(period)) {
-    return res.status(400).json({ error: '有効な集計期間を指定してください。' });
-  }
-
-  sendRows(
-    res,
-    db.prepare('SELECT category, revenue, expenses FROM revenue WHERE period = ? ORDER BY id'),
-    [period]
-  );
-});
-
-app.get('/api/activities', (req, res) => {
-  sendRows(res, db.prepare('SELECT * FROM activities ORDER BY created_at DESC, id DESC'));
-});
-
-app.get('/api/customers', (req, res) => {
-  sendRows(res, db.prepare('SELECT * FROM customers ORDER BY customer_id'));
-});
-
-app.get(['/api/monthly-payments', '/api/payments'], (req, res) => {
-  const customerId = Number(req.query.customerId ?? req.query.id);
-  if (!Number.isSafeInteger(customerId) || customerId < 1) {
-    return res.status(400).json({ error: '有効な顧客IDを指定してください。' });
-  }
-
-  sendRows(
-    res,
-    db.prepare(
-      'SELECT id, customer_id, year, month, status, URL AS url, URL FROM monthly_payments WHERE customer_id = ? ORDER BY year DESC, month'
-    ),
-    [customerId]
-  );
-});
-
-app.get('/api/items', (req, res) => {
-  sendRows(res, db.prepare('SELECT * FROM items ORDER BY id'));
-});
 
 const distPath = path.join(__dirname, 'dist');
 const indexPath = path.join(distPath, 'index.html');

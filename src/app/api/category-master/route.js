@@ -1,35 +1,5 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { databaseUnavailable } from '@/lib/databaseUnavailable';
 
-export async function GET() {
-    try {
-        const rows = db.prepare(`
-      SELECT
-        category_id,
-        category_type,
-        category_code,
-        category_name,
-        category_short,
-        parent_code
-      FROM category_master
-      ORDER BY
-        category_type,
-        category_code
-    `).all();
-
-        return NextResponse.json(rows);
-
-    } catch (error) {
-        console.error('Category Master GET API Error:', error);
-
-        return NextResponse.json(
-            {
-                success: false,
-                error: error.message
-            },
-            {
-                status: 500
-            }
-        );
-    }
+export function GET() {
+    return databaseUnavailable('Category master');
 }
