@@ -3,10 +3,8 @@ C:\sqlite\sqlite3.exe "C:\Users\Owner\Workplace-Git-BBiz\bbiz-ERP-CRM-Interprito
  C:\Users\Owner\Workplace-Git-BBiz\bbiz-ERP-CRM-Interpritor\src\components
 
  
-
-
-
-
+アイコンサイト
+https://lucide.dev/
 
 
 

@@ -120,11 +120,9 @@
   }
 }
 
-svg {
-  fill: currentColor; // または stroke: currentColor;
-} 
-
-
+svg:not(.lucide) {
+  fill: currentColor;
+}
 
 // .header-left 内、または適切な階層で一元管理する
 .header-left {
