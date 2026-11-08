@@ -1,5 +1,7 @@
 import db from '@/lib/db'; // 既存のデータベース接続用ユーティリティ
 
+export const dynamic = 'force-dynamic';
+
 // アイテムの型定義（必要に応じてカラムを追加・調整してください）
 interface Item {
     id: number | string;

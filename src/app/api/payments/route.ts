@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import path from 'path';
-import sqlite3 from 'sqlite3';
+import { loadSqlite3 } from '@/lib/sqlite';
 
 export async function GET(request: Request): Promise<NextResponse> {
+    const sqlite3: typeof import('sqlite3') = loadSqlite3();
     const { searchParams } = new URL(request.url);
     const customerId = searchParams.get('customerId');
 

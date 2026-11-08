@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import path from 'path';
-import Database from 'better-sqlite3';
+import { openDatabase } from '@/lib/sqlite';
 
 export async function GET() {
     try {
         const dbPath = path.join(process.cwd(), 'dashboard.sqlite');
-        const db = new Database(dbPath);
+        const db = openDatabase(dbPath);
 
         // 'customers' ではなく正しいテーブル名 'project_customer' から取得する[cite: 13]
         const customers = db.prepare('SELECT proj_customer FROM project_customer').all();

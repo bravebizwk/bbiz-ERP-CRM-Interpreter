@@ -1,4 +1,5 @@
-import sqlite3, { type RunResult } from 'sqlite3';
+import { loadSqlite3 } from '@/lib/sqlite';
+import type { RunResult } from 'sqlite3';
 import { NextResponse } from 'next/server';
 import path from 'path';
 
@@ -7,6 +8,7 @@ const dbPath = path.resolve(process.cwd(), 'dashboard.sqlite');
 
 // 1. 一覧取得 (GET)
 export async function GET() {
+    const sqlite3: typeof import('sqlite3') = loadSqlite3();
     const db = new sqlite3.Database(dbPath);
 
     return new Promise<NextResponse>((resolve) => {
@@ -36,6 +38,7 @@ export async function GET() {
 
 // 2. 新規登録 (POST)
 export async function POST(request: Request) {
+    const sqlite3: typeof import('sqlite3') = loadSqlite3();
     const db = new sqlite3.Database(dbPath);
 
     try {

@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import Database from 'better-sqlite3';
 import path from 'path';
+import { openDatabase } from '@/lib/sqlite';
 
 export async function GET() {
     try {
         const dbPath = path.join(process.cwd(), 'dashboard.sqlite'); // または適切なDBパス
-        const db = new Database(dbPath, { readonly: true });
+        const db = openDatabase(dbPath, { readonly: true });
 
         const items = db.prepare('SELECT label, path, icon FROM sidebar_menu').all();
         db.close();

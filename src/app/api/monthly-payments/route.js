@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import path from 'path';
-import Database from 'better-sqlite3';
+import { openDatabase } from '@/lib/sqlite';
 
 export async function GET(request) {
     try {
@@ -13,7 +13,7 @@ export async function GET(request) {
 
         // データベースのパス（必要に応じて 'src' フォルダの有無を確認してください）
         const dbPath = path.join(process.cwd(), 'dashboard.sqlite');
-        const db = new Database(dbPath);
+        const db = openDatabase(dbPath);
 
         // URLカラムを確実に取得するため、URL AS url を追加
         const stmt = db.prepare('SELECT *, URL AS url FROM monthly_payments WHERE customer_id = ? OR id = ?');

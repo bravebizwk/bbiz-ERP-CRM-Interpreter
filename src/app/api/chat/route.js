@@ -1,45 +1,50 @@
 import { NextResponse } from 'next/server';
-import Database from 'better-sqlite3';
 import path from 'path';
+import { openDatabase } from '@/lib/sqlite';
 
-// プロジェクトルートにある dashboard.sqlite に接続
-const dbPath = path.join(process.cwd(), 'dashboard.sqlite');
-const db = new Database(dbPath);
+let db;
 
-// テーブルの初期化（初回実行時に自動作成）
-db.exec(`
-  CREATE TABLE IF NOT EXISTS chat_rooms (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
+function getDatabase() {
+    if (!db) {
+        db = openDatabase(path.join(process.cwd(), 'dashboard.sqlite'));
 
-  CREATE TABLE IF NOT EXISTS chat_messages (
-    id TEXT PRIMARY KEY,
-    room_id TEXT NOT NULL,
-    sender TEXT NOT NULL,
-    content TEXT NOT NULL,
-    created_at DATETIME DEFAULT (datetime('now', 'localtime')),
-    FOREIGN KEY (room_id) REFERENCES chat_rooms(id)
-  );
-`);
+        db.exec(`
+          CREATE TABLE IF NOT EXISTS chat_rooms (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          );
 
-// 初期ルームが存在しない場合はデフォルトルームを作成
-const roomCount = db.prepare('SELECT COUNT(*) as count FROM chat_rooms').get().count;
-if (roomCount === 0) {
-    const defaultRoomId = 'room-general';
-    db.prepare('INSERT INTO chat_rooms (id, name) VALUES (?, ?)').run(defaultRoomId, '一般チャット');
-    db.prepare('INSERT INTO chat_messages (id, room_id, sender, content) VALUES (?, ?, ?, ?)').run(
-        'msg-1',
-        defaultRoomId,
-        'システム',
-        'チャットへようこそ！'
-    );
+          CREATE TABLE IF NOT EXISTS chat_messages (
+            id TEXT PRIMARY KEY,
+            room_id TEXT NOT NULL,
+            sender TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_at DATETIME DEFAULT (datetime('now', 'localtime')),
+            FOREIGN KEY (room_id) REFERENCES chat_rooms(id)
+          );
+        `);
+
+        const roomCount = db.prepare('SELECT COUNT(*) as count FROM chat_rooms').get().count;
+        if (roomCount === 0) {
+            const defaultRoomId = 'room-general';
+            db.prepare('INSERT INTO chat_rooms (id, name) VALUES (?, ?)').run(defaultRoomId, '一般チャット');
+            db.prepare('INSERT INTO chat_messages (id, room_id, sender, content) VALUES (?, ?, ?, ?)').run(
+                'msg-1',
+                defaultRoomId,
+                'システム',
+                'チャットへようこそ！'
+            );
+        }
+    }
+
+    return db;
 }
 
 // GET: ルーム一覧とアクティブなルームのメッセージを取得
 export async function GET(request) {
     try {
+        const db = getDatabase();
         const { searchParams } = new URL(request.url);
         const roomIdParam = searchParams.get('roomId');
 
@@ -80,6 +85,7 @@ export async function GET(request) {
 // POST: メッセージの送信 または ルームの新規作成
 export async function POST(request) {
     try {
+        const db = getDatabase();
         const body = await request.json();
         const { action } = body;
 
