@@ -1,11 +1,25 @@
 import React, { useState } from "react";
 
+type TemplateKey = "minutes" | "report" | "handover" | "issue";
+type Quadrant = 1 | 2 | 3 | 4;
+
+interface TemplateField {
+    label: string;
+    type: "input" | "textarea";
+    placeholder: string;
+}
+
+interface TemplateDefinition {
+    title: string;
+    fields: TemplateField[];
+}
+
 export default function Routinejob() {
     // --- タブ切り替え ---
     const [activeTab, setActiveTab] = useState("checklist");
 
     // --- 1. チェックリストの状態 ---
-    const [checkedItems, setCheckedItems] = useState({});
+    const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
     const checklistGroups = [
         {
@@ -46,7 +60,7 @@ export default function Routinejob() {
     const doneItems = Object.values(checkedItems).filter(Boolean).length;
     const progressPercent = Math.round((doneItems / totalItems) * 100);
 
-    const toggleCheck = (id) => {
+    const toggleCheck = (id: string) => {
         setCheckedItems((prev) => {
             const next = { ...prev, [id]: !prev[id] };
             const newDoneCount = Object.values(next).filter(Boolean).length;
@@ -62,9 +76,9 @@ export default function Routinejob() {
     };
 
     // --- 2. テンプレートの状態 ---
-    const [selectedTemplate, setSelectedTemplate] = useState(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey | null>(null);
 
-    const templates = {
+    const templates: Record<TemplateKey, TemplateDefinition> = {
         minutes: {
             title: "📝 議事録",
             fields: [
@@ -134,12 +148,12 @@ export default function Routinejob() {
     });
 
     // --- 4. 優先度マトリクスの状態 ---
-    const [tasks, setTasks] = useState({ 1: [], 2: [], 3: [], 4: [] });
-    const [taskInputs, setTaskInputs] = useState({ 1: "", 2: "", 3: "", 4: "" });
+    const [tasks, setTasks] = useState<Record<Quadrant, string[]>>({ 1: [], 2: [], 3: [], 4: [] });
+    const [taskInputs, setTaskInputs] = useState<Record<Quadrant, string>>({ 1: "", 2: "", 3: "", 4: "" });
 
-    const handleAddTask = (e, q) => {
+    const handleAddTask = (e: React.KeyboardEvent<HTMLInputElement>, q: Quadrant) => {
         if (e.key !== "Enter") return;
-        const val = e.target.value.trim();
+        const val = e.currentTarget.value.trim();
         if (!val) return;
         setTasks((prev) => ({
             ...prev,
@@ -148,7 +162,7 @@ export default function Routinejob() {
         setTaskInputs((prev) => ({ ...prev, [q]: "" }));
     };
 
-    const removeTask = (q, i) => {
+    const removeTask = (q: Quadrant, i: number) => {
         setTasks((prev) => ({
             ...prev,
             [q]: prev[q].filter((_, index) => index !== i),
@@ -162,7 +176,7 @@ export default function Routinejob() {
     const [toastMessage, setToastMessage] = useState("");
     const [isToastShow, setIsToastShow] = useState(false);
 
-    const showToast = (msg) => {
+    const showToast = (msg: string) => {
         setToastMessage(msg);
         setIsToastShow(true);
         setTimeout(() => setIsToastShow(false), 2800);
@@ -256,7 +270,7 @@ export default function Routinejob() {
                         <div className="section-sub">よく使う書類の雛形を選んで、すぐに記入できます</div>
 
                         <div className="template-grid">
-                            {Object.keys(templates).map((key) => {
+                            {(Object.keys(templates) as TemplateKey[]).map((key) => {
                                 const t = templates[key];
                                 return (
                                     <div
@@ -287,7 +301,7 @@ export default function Routinejob() {
                                             {f.type === "input" ? (
                                                 <input type="text" placeholder={f.placeholder} />
                                             ) : (
-                                                <textarea rows="4" placeholder={f.placeholder}></textarea>
+                                                <textarea rows={4} placeholder={f.placeholder}></textarea>
                                             )}
                                         </div>
                                     ))}
@@ -383,12 +397,12 @@ export default function Routinejob() {
                         
 
                         <div className="eisenhower" id="matrix">
-                            {[
+                            {([
                                 { q: 1, title: "重要 × 緊急", badge: "今すぐ" },
                                 { q: 2, title: "重要 × 非緊急", badge: "計画的に" },
                                 { q: 3, title: "非重要 × 緊急", badge: "委任" },
                                 { q: 4, title: "非重要 × 非緊急", badge: "削除" },
-                            ].map((cell) => (
+                            ] as { q: Quadrant; title: string; badge: string }[]).map((cell) => (
                                 <div className="ei-cell" key={cell.q}>
                                     <div className="ei-title">
                                         {cell.title} <span className="ei-badge">{cell.badge}</span>

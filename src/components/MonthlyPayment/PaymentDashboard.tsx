@@ -1,11 +1,25 @@
 'use client';
 import React, { useState, useEffect } from "react";
 
+interface Customer {
+    customer_id: number | string;
+    customer_name: string;
+    customer_code: string;
+    fiscal_year_end?: string | null;
+}
+
+interface Payment {
+    year: number;
+    month: number;
+    status: string;
+    url?: string | null;
+}
+
 export default function PaymentDashboard() {
-    const [customers, setCustomers] = useState([]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
     const [selectedCustomerId, setSelectedCustomerId] = useState("");
-    const [selectedCustomer, setSelectedCustomer] = useState(null);
-    const [paymentData, setPaymentData] = useState([]);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [paymentData, setPaymentData] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(false);
 
     // 1. 初回レンダリング時に顧客一覧（決算日含む）を取得
@@ -15,7 +29,7 @@ export default function PaymentDashboard() {
             .then((data) => {
                 setCustomers(data);
                 if (data.length > 0) {
-                    setSelectedCustomerId(data[0].customer_id);
+                    setSelectedCustomerId(String(data[0].customer_id));
                 }
             })
             .catch((err) => console.error("顧客データの取得に失敗しました:", err));
@@ -43,7 +57,7 @@ export default function PaymentDashboard() {
             });
     }, [selectedCustomerId, customers]);
 
-    const getFiscalMonths = (fiscalYearEnd) => {
+    const getFiscalMonths = (fiscalYearEnd: string | null | undefined) => {
         if (!fiscalYearEnd) {
             return Array.from({ length: 12 }, (_, i) => i + 1);
         }
@@ -60,7 +74,7 @@ export default function PaymentDashboard() {
     const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
     // ステータスとURLを同時に取得するヘルパー関数
-    const getPaymentItem = (year, month) => {
+    const getPaymentItem = (year: number, month: number) => {
         const item = paymentData.find((p) => p.year === year && p.month === month);
         return {
             status: item ? item.status : "NotYet",
@@ -68,7 +82,7 @@ export default function PaymentDashboard() {
         };
     };
 
-    const getAnnualOkCount = (year) => {
+    const getAnnualOkCount = (year: number) => {
         return paymentData.filter((p) => p.year === year && p.status === "OK").length;
     };
 
@@ -117,7 +131,7 @@ export default function PaymentDashboard() {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="14" className="py-4 text-center">
+                                    <td colSpan={14} className="py-4 text-center">
                                         読み込み中...
                                     </td>
                                 </tr>
@@ -164,7 +178,7 @@ export default function PaymentDashboard() {
     );
 }
 
-function getBadgeColor(status) {
+function getBadgeColor(status: string) {
     switch (status) {
         case "OK":
             return "success";

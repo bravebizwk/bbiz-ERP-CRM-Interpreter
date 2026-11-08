@@ -91,6 +91,16 @@ function escapeHtml(str = '') {
     .replace(/"/g, '&quot;');
 }
 
+/**
+ * @param {{
+ *   title: string,
+ *   card: { id?: string, title: string, desc: string, assignees: string[], due: string, priority: 'high' | 'medium' | 'low' },
+ *   columns: { id: string, title: string }[],
+ *   currentColId: string,
+ *   onSave: (formData: { title: string, desc: string, assignees: string[], due: string, priority: 'high' | 'medium' | 'low', col: string }) => void,
+ *   onDelete?: () => void
+ * }} options
+ */
 export function showModal({ title, card, columns, currentColId, onSave, onDelete }) {
   // 呼び出されたタイミングでスタイルを確実に挿入
   ensureModalStyles();

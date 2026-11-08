@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
+interface User {
+    id: number | string;
+    name: string;
+    email: string;
+    role: string;
+    status: string;
+    joined_date: string;
+}
+
 export default function Users() {
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -17,7 +26,7 @@ export default function Users() {
             });
     }, []);
 
-    const getStatusStyle = (status) => {
+    const getStatusStyle = (status: string) => {
         switch (status) {
             case 'アクティブ':
                 return { backgroundColor: '#e6f4ea', color: '#137333' };
@@ -78,4 +87,3 @@ export default function Users() {
         </div>
     );
 }
-

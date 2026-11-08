@@ -3,7 +3,35 @@ import React, { useState } from 'react';
 import { showModal } from './modal';
 import { showToast } from './toast';
 
-const INITIAL_COLUMNS = [
+type CardPriority = 'high' | 'medium' | 'low';
+
+interface KanbanCard {
+    id: string;
+    title: string;
+    desc: string;
+    assignees: string[];
+    due: string;
+    priority: CardPriority;
+    col?: string;
+}
+
+interface KanbanColumn {
+    id: string;
+    title: string;
+    color: string;
+    cards: KanbanCard[];
+}
+
+interface CardFormData {
+    title: string;
+    desc: string;
+    assignees: string[];
+    due: string;
+    priority: CardPriority;
+    col: string;
+}
+
+const INITIAL_COLUMNS: KanbanColumn[] = [
     {
         id: 'todo',
         title: 'To Do',
@@ -32,18 +60,18 @@ const INITIAL_COLUMNS = [
 ];
 
 export default function KanbanPage() {
-    const [columns, setColumns] = useState(INITIAL_COLUMNS);
-    const [draggedCard, setDraggedCard] = useState(null);
+    const [columns, setColumns] = useState<KanbanColumn[]>(INITIAL_COLUMNS);
+    const [draggedCard, setDraggedCard] = useState<{ card: KanbanCard; sourceColId: string } | null>(null);
 
     // --- カードのドラッグ＆ドロップ ---
-    const handleCardDragStart = (e, card, sourceColId) => {
+    const handleCardDragStart = (e: React.DragEvent<HTMLElement>, card: KanbanCard, sourceColId: string) => {
         e.stopPropagation();
         setDraggedCard({ card, sourceColId });
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', card.id);
     };
 
-    const handleCardDrop = (e, targetColId) => {
+    const handleCardDrop = (e: React.DragEvent<HTMLElement>, targetColId: string) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -73,13 +101,13 @@ export default function KanbanPage() {
     };
 
     // --- カード追加モーダルを開く ---
-    const handleAddCard = (colId) => {
+    const handleAddCard = (colId: string) => {
         showModal({
             title: '新規カード追加',
             card: { title: '', desc: '', assignees: [], due: '', priority: 'medium' },
             columns: columns,
             currentColId: colId,
-            onSave: (formData) => {
+            onSave: (formData: CardFormData) => {
                 const newCard = {
                     id: Date.now().toString(),
                     ...formData
@@ -96,13 +124,13 @@ export default function KanbanPage() {
     };
 
     // --- カード編集モーダルを開く ---
-    const handleEditCard = (card, currentColId) => {
+    const handleEditCard = (card: KanbanCard, currentColId: string) => {
         showModal({
             title: 'カードの編集',
             card: card,
             columns: columns,
             currentColId: currentColId,
-            onSave: (formData) => {
+            onSave: (formData: CardFormData) => {
                 setColumns(columns.map(col => {
                     const filteredCards = col.cards.filter(c => c.id !== card.id);
                     if (col.id === formData.col) {

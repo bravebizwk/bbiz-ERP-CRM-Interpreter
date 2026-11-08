@@ -1,4 +1,9 @@
 
+interface DownloadDocument {
+    name: string;
+    dropboxUrl: string;
+}
+
 export default function DownloadDocumentsCard() {
 
 
@@ -24,7 +29,7 @@ export default function DownloadDocumentsCard() {
         },
     ];
 
-    const handleDownload = (doc) => {
+    const handleDownload = (doc: DownloadDocument) => {
         if (!doc.dropboxUrl || doc.dropboxUrl.includes("xxxx")) {
             alert(`${doc.name} のDropboxリンクがまだ設定されていません。`);
             return;

@@ -1,4 +1,4 @@
-import sqlite3 from 'sqlite3';
+import sqlite3, { type RunResult } from 'sqlite3';
 import { NextResponse } from 'next/server';
 import path from 'path';
 
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
                     body.intp_name_en || '',
                     body.intp_name_kanji || '',
                     body.intp_name_middle || '',
-                    function (err: Error | null) {
+                    function (this: RunResult, err: Error | null) {
                         if (err) {
                             db.run('ROLLBACK');
                             db.close();
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
                             return;
                         }
 
-                        const newIntpNo = (this as any).lastID;
+                        const newIntpNo = this.lastID;
 
                         // 2. interpreter_info テーブル
                         const stmtInfo = db.prepare(`
