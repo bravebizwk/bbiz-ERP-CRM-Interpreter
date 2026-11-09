@@ -1,0 +1,447 @@
+@use "../abstracts/variables" as *;
+
+
+.stats-card {
+  background: #111827;
+
+  border: 1px solid #1e293b;
+
+  border-radius: 12px;
+
+  padding: 20px;
+
+  transition: all 0.25s ease;
+
+  cursor: pointer;
+    h1,h2,h3 {
+        color: $text-primary;
+      }
+
+  &:hover {
+    transform: translateY(-2px);
+
+    border-color: #38bdf8;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  }
+}
+
+.stats-card-title {
+  color: #94a3b8;
+
+  font-size: 0.875rem;
+
+  margin-bottom: 10px;
+
+  text-transform: uppercase;
+}
+
+.stats-card-value {
+  font-size: 2rem;
+
+  font-weight: 700;
+
+  margin-bottom: 10px;
+
+  color: #f8fafc;
+}
+
+.stats-card-change {
+  font-size: 0.875rem;
+
+  font-weight: 600;
+}
+
+.positive {
+  color: #10b981;
+}
+
+.negative {
+  color: #ef4444;
+}
+
+
+
+.card {
+  background: #111827;
+
+  border: 1px solid #1e293b;
+
+  border-radius: 12px;
+
+  padding: 20px;
+}
+
+.card {
+
+  h1,
+  h2 {
+    color: $text-primary;
+  }
+        h3 {
+          color:$text-secondary;
+        }
+}
+
+
+.revenue-chart-card {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(30, 41, 59, 0.6) 0%,
+      rgba(15, 23, 42, 1) 100%
+    );
+
+  border: 1px solid #334155;
+}
+
+
+
+
+/* ==========================================================================
+   Orders Page Component Styles
+   ========================================================================== */
+
+.orders-select-filter-bar {
+  display: flex;
+  flex-direction: column; // ★ 横並び(row)から縦並び(column)に変更
+  gap: 8px; // ★ タイトルと入力欄の間隔
+  align-items: left;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap; // 画面幅が狭い場合にも対応
+  color: $text-primary-white;
+
+  select {
+    padding: 8px 12px;
+    font-size: 14px;
+  // ボックスの背景色を指定
+    background-color: #3d434d; // 薄いグレーなどの背景色   
+    border: 1px solid #6e7378;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    min-width: 180px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    color: $text-primary-white;
+
+    // ホバー時のスタイル
+    &:hover {
+      border-color: #9b5c5c;
+    }
+
+    // フォーカス時のスタイル
+    &:focus {
+      border-color: #0066cc;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+    }
+
+    // 選択肢の基本スタイル
+    option {
+      padding: 6px;
+    }
+  }
+}
+
+// 文字入力候補式の為、一部重複
+.orders-select-filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  color: $text-primary-white;
+  position: relative; // ドロップダウンの位置基準
+
+  // 入力ボックスのスタイル
+  input[type="text"] {
+    padding: 8px 12px;
+    font-size: 14px;
+    background-color: #3d434d;
+    border: 1px solid #6e7378;
+    border-radius: 6px;
+    outline: none;
+    min-width: 180px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    color: $text-primary-white;
+
+    &:hover {
+      border-color: #9b5c5c;
+    }
+
+    &:focus {
+      border-color: #0066cc;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+    }
+  }
+
+  // ドロップダウンリスト（<ul>）のスタイル
+  .dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #3d434d; // 入力欄に合わせた背景色
+    border: 1px solid #6e7378;
+    border-radius: 6px;
+    list-style: none;
+    margin: 4px 0 0 0;
+    padding: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+
+    li {
+      padding: 8px 12px;
+      cursor: pointer;
+      color: $text-primary-white;
+      border-bottom: 1px solid #4f5560;
+
+      &:hover {
+        background-color: #4f5560;
+      }
+
+      &.clear-option {
+        font-weight: bold;
+        background-color: #2c3038;
+      }
+    }
+  }
+}
+
+/* ==========================================================================
+   カード内横並び Styles
+   ========================================================================== */
+     .card-horizontal {
+       display: flex;
+       gap: 20px;
+       width: 100%;
+  
+       .stats-card {
+         flex: 1;
+         background: #111827;
+         border: 1px solid #1e293b;
+         border-radius: 12px;
+         padding: 20px;
+         transition: all 0.25s ease;
+         cursor: pointer;
+  
+         h1,
+         h2 {
+           color: #fff;
+           margin: 0;
+         }
+  
+         h2 {
+           font-size: 14px;
+           color: #94a3b8;
+           margin-bottom: 10px;
+         }
+  
+         h1 {
+           font-size: 32px;
+           font-weight: 700;
+           margin-bottom: 8px;
+         }
+  
+         p {
+           color: #38bdf8;
+           margin: 0;
+           font-size: 14px;
+         }
+  
+         &:hover {
+           transform: translateY(-2px);
+           border-color: #38bdf8;
+           box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+         }
+       }
+     }
+
+/* ==========================================================================
+   カード内横並び Styles
+   ========================================================================== */
+
+.orders-select-filter-bar-vertual {
+  display: flex;
+  flex-direction: row; // 要素を横並びにする
+  align-items: center; // 上下の中央揃え
+  gap: 12px; // 要素同士の間隔（お好みで調整）
+  flex-wrap: wrap; // 画面幅が狭い時に自動で折り返す場合
+  margin-bottom: 24px;
+  flex-wrap: wrap; // 画面幅が狭い場合にも対応
+  color: $text-primary-white;
+
+  select {
+    padding: 8px 12px;
+    font-size: 14px;
+    // ボックスの背景色を指定
+    background-color: #3d434d; // 薄いグレーなどの背景色   
+    border: 1px solid #6e7378;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    min-width: 180px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    color: $text-primary-white;
+
+    // ホバー時のスタイル
+    &:hover {
+      border-color: #9b5c5c;
+    }
+
+    // フォーカス時のスタイル
+    &:focus {
+      border-color: #0066cc;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+    }
+
+    // 選択肢の基本スタイル
+    option {
+      padding: 6px;
+    }
+  }
+     // 入力ボックスのスタイル
+     input[type="text"] {
+       padding: 8px 12px;
+       font-size: 14px;
+       background-color: #3d434d;
+       border: 1px solid #6e7378;
+       border-radius: 6px;
+       outline: none;
+       min-width: 180px;
+       transition: border-color 0.2s ease, box-shadow 0.2s ease;
+       color: $text-primary-white;
+  
+       &:hover {
+         border-color: #9b5c5c;
+       }
+  
+       &:focus {
+         border-color: #0066cc;
+         box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+       }
+     }
+  
+     // ドロップダウンリスト（<ul>）のスタイル
+     .dropdown-list {
+       position: absolute;
+       top: 100%;
+       left: 0;
+       right: 0;
+       max-height: 200px;
+       overflow-y: auto;
+       background-color: #3d434d; // 入力欄に合わせた背景色
+       border: 1px solid #6e7378;
+       border-radius: 6px;
+       list-style: none;
+       margin: 4px 0 0 0;
+       padding: 0;
+       z-index: 1000;
+       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  
+       li {
+         padding: 8px 12px;
+         cursor: pointer;
+         color: $text-primary-white;
+         border-bottom: 1px solid #4f5560;
+  
+         &:hover {
+           background-color: #4f5560;
+         }
+  
+         &.clear-option {
+           font-weight: bold;
+           background-color: #2c3038;
+         }
+       }
+     }
+}
+
+
+
+
+
+
+.orders-select-filter-bar-vertual,
+.stats-card {
+
+  // input と select の見た目・パディング・背景色・ボーダーを統一
+  input[type="text"],
+  select.form-select {
+    padding: 8px 12px;
+    font-size: 14px;
+    background-color: #3d434d; // 既存の入力欄背景色
+    border: 1px solid #6e7378; // 既存の入力欄枠線
+    border-radius: 6px;
+    color: #d1d2d8;
+    outline: none;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: #0066cc;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+    }
+  }
+
+  // ラップしている relative div の横幅を基準に広がる設定
+  div[style*="relative"] {
+    display: inline-block;
+  }
+}
+
+
+
+/* ==========================================================================
+   カード内縦並び Styles
+   ========================================================================== */
+.card-vertical {
+  display: flex;
+  flex-direction: column; // 縦並び
+    align-items: flex-start; // 左揃え
+    gap: 12px; // 要素同士の間隔（お好みで調整）
+    flex-wrap: wrap; // 画面幅が狭い時に自動で折り返す場合
+    margin-bottom: 24px;
+    flex-wrap: wrap; // 画面幅が狭い場合にも対応
+    color: $text-primary-white;
+
+  .stats-card {
+    flex: 1;
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.25s ease;
+    cursor: pointer;
+
+    h1,
+    h2 {
+      color: #fff;
+      margin: 0;
+    }
+
+    h2 {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #38bdf8;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      border-color: #38bdf8;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+  }
+}

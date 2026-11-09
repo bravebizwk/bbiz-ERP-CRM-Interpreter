@@ -1,0 +1,11 @@
+.sidebar-nav {
+  width: 100%;
+}
+
+.sidebar-menu {
+  list-style: none;
+
+  display: flex;
+  flex-direction: column;
+
+}

@@ -1,0 +1,136 @@
+@use "../abstracts/variables" as *;
+
+.admin-header {
+  grid-area: header;
+  flex: 0 0 $header-height;
+  width: 100%;
+  height: $header-height; // 変数がない場合は 70px などに置き換え
+  background: #111827;
+  border-bottom: 1px solid #1e293b;
+  padding: 0 20px;
+
+  /* 全体を横並びに配置（左：ロゴ・ボタン / 右：検索バー） */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .header-title {
+    color: #4676c2;
+    font-size: 1.8rem;
+    font-weight: 800;
+  }
+
+  /* 左側ブロック（ボタン + タイトル）の横並び設定 */
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    /* ボタンとタイトルの間の余白 */
+
+    .hamburger-menu {
+      background: transparent;
+      border: none;
+      color: #21559d;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 6px;
+      transition: background-color 0.2s, color 0.2s;
+
+      &:hover {
+        background-color: #1e293b;
+        color: #1967b6;
+      }
+    }
+
+    .header-title {
+      color: #f8fafc !important;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  /* 右側ブロック（検索バー周り）の設定 */
+  .header-right {
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    padding: 4px;
+    transition: all 0.3s ease;
+
+    .header-search-input {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #f8fafc;
+      padding: 8px 12px;
+      font-size: 0.875rem;
+      outline: none;
+      transition: all 0.3s ease;
+
+      &::placeholder {
+        color: #64748b;
+      }
+
+      /* フォーカス時、または .header-right 全体ホバー時の連動エフェクト */
+      &:focus {
+        border-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.3),
+          0 0 4px rgba(255, 255, 255, 0.5);
+      }
+    }
+
+    /* ★ .header-right 自体にホバーしたとき、周りが白く輝く演出 */
+    &:hover {
+      .header-search-input {
+        border-color: rgba(255, 255, 255, 0.6);
+        box-shadow: 0 8px 10px rgba(255, 255, 255, 0.35);
+      }
+    }
+  }
+}
+
+
+.header-log-companyname {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100% !important; // ヘッダー全体に広げるために必要です
+}
+
+.logo {
+  width: 44px;
+  height: auto;
+  margin-left: 2rem;
+}
+
+.header-page-title {
+  margin-left: auto; // ★これで左側の要素が左に寄ったまま、ページタイトルが右端に配置されます
+  // もし文字自体を右寄せにしたい場合は以下も追加してください
+  // text-align: right; 
+  margin-right: 2rem;
+
+}
+.header-title {
+  h2 {
+    color: #f8fafc !important;
+  }
+}
+
+svg:not(.lucide) {
+  fill: currentColor;
+}
+
+// .header-left 内、または適切な階層で一元管理する
+.header-left {
+  .header-title {
+    color: #f8fafc !important; // ここで一発で白を指定する
+
+    h2 {
+      color: #f8fafc !important; // もし中に h2 がある場合も考慮
+    }
+  }
+}
